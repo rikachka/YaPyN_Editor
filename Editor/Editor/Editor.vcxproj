@@ -146,6 +146,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="YaPyN_Editor.h" />
     <ClInclude Include="precompiled.h" />
   </ItemGroup>

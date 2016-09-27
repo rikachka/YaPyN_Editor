@@ -17,6 +17,7 @@ bool YaPyN_Editor::RegisterClass()
 	windowClass.cbSize = sizeof(WNDCLASSEX);
 	windowClass.lpfnWndProc = YaPyN_Editor::windowProc;
 	windowClass.hInstance = GetModuleHandle(0);
+	windowClass.lpszMenuName = MAKEINTRESOURCE(IDR_MENU1);
 	windowClass.lpszClassName = L"YaPyN_Editor";
 
 	return (::RegisterClassEx(&windowClass) != 0);
@@ -37,9 +38,7 @@ bool YaPyN_Editor::Create()
 		GetModuleHandle(0),
 		this);
 
-	/*
 	CreateToolbar();
-	*/
 	if( handle == 0 ) {
 		MessageBox(handle, L"Error: CreateWindowEx return 0", NULL, MB_OK);
 	}
@@ -73,7 +72,7 @@ void YaPyN_Editor::OnDestroy()
 bool YaPyN_Editor::OnClose()
 {
 	if( changed ) {
-		switch (MessageBox(handle, L"Вы ввели текст. Сохранить?", L"Завершение работы", MB_YESNOCANCEL))
+		switch (MessageBox(handle, L"Вы ввели текст. Сохранить?", L"Завершение работы", MB_YESNOCANCEL | MB_ICONWARNING))
 		{
 			case IDYES:
 			{
@@ -90,7 +89,7 @@ bool YaPyN_Editor::OnClose()
 			}
 		}
 	} else {
-		switch (MessageBox(handle, L"Do you really want to leave?", L"Exit", MB_YESNO | MB_ICONWARNING)) {
+		switch (MessageBox(handle, L"Вы действительно хотите выйти?", L"Завершение работы", MB_YESNO | MB_ICONWARNING)) {
 			case IDNO:
 			{
 				return false;
@@ -111,7 +110,7 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 		switch( LOWORD(wParam) ) {
 			case ID_FILE_EXIT:
 			{
-				OnClose();
+				SendMessage(hWnd, WM_CLOSE, wParam, lParam);
 				break;
 			}
 			case ID_FILE_SAVE:
@@ -140,6 +139,37 @@ void YaPyN_Editor::saveFile(std::string pathToFile)
 void YaPyN_Editor::loadFile(std::string pathToFile)
 {
 }
+
+void YaPyN_Editor::CreateToolbar()
+{
+	/*
+	TBBUTTON tbb[] = {
+		{ STD_FILENEW, ID_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
+		{ STD_FILEOPEN, ID_FILE_OPEN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
+		{ STD_FILESAVE, ID_FILE_SAVE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
+	};
+
+	hWndToolBar = CreateToolbarEx(handle, WS_CHILD | WS_VISIBLE | CCS_TOP, 1,
+		0, HINST_COMMCTRL, IDB_STD_SMALL_COLOR, tbb, _countof(tbb), 0, 0, 0, 0, sizeof(TBBUTTON));
+
+	//DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
+	//COLORMAP colorMap;
+	//colorMap.from = RGB(100, 100, 100);
+	//colorMap.to = backgroundColor;
+	HBITMAP hbm = CreateMappedBitmap(::GetModuleHandle(0), IDB_BITMAP1, 0, NULL, 1);
+	TBADDBITMAP tb;
+	tb.hInst = NULL;
+	tb.nID = reinterpret_cast<UINT_PTR>(hbm);
+	int imageIndex = SendMessage(hWndToolBar, TB_ADDBITMAP, 0, reinterpret_cast<LPARAM>(&tb));
+	TBBUTTON tbButtonsAdd[] =
+	{
+		{ imageIndex, ID_CELL_ADD, TBSTATE_ENABLED, BTNS_BUTTON },
+		{ STD_DELETE, ID_CELL_DELETE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
+	};
+	SendMessage(hWndToolBar, TB_ADDBUTTONS, _countof(tbButtonsAdd), reinterpret_cast<LPARAM>(tbButtonsAdd));
+	*/
+}
+
 
 LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {

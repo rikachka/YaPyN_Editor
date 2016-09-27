@@ -25,11 +25,13 @@ protected:
 private:
 
 	HWND handle;
+	HWND hWndToolBar;
+
 	bool changed;
 
 	void saveFile(std::string pathToFile);
 	void loadFile(std::string pathToFile);
-
+	void CreateToolbar();
 
 	static LRESULT __stdcall windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
