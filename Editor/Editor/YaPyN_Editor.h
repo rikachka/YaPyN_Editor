@@ -20,11 +20,16 @@ protected:
 	void OnSize();
 	void OnDestroy();
 	bool OnClose();
+	void OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
 
 	HWND handle;
 	bool changed;
+
+	void saveFile(std::string pathToFile);
+	void loadFile(std::string pathToFile);
+
 
 	static LRESULT __stdcall windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };

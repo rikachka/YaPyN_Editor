@@ -1,4 +1,8 @@
-#include "YaPyN_Editor.h"
+ï»¿#include "YaPyN_Editor.h"
+
+// Ð’Ñ€ÐµÐ¼ÐµÐ½Ð½Ñ‹Ðµ Ð¿ÑƒÑ‚ÑŒ Ð´Ð»Ñ ÑÐ¾Ñ…Ñ€Ð°Ð½ÐµÐ½Ð¸Ñ/Ð·Ð°Ð³Ñ€ÑƒÐ·ÐºÐ¸.
+std::string filePathToLoad = "file.txt";
+std::string filePathToSave = "file.txt";
 
 YaPyN_Editor::YaPyN_Editor()
 {
@@ -32,6 +36,13 @@ bool YaPyN_Editor::Create()
 		0,
 		GetModuleHandle(0),
 		this);
+
+	/*
+	CreateToolbar();
+	*/
+	if( handle == 0 ) {
+		MessageBox(handle, L"Error: CreateWindowEx return 0", NULL, MB_OK);
+	}
 	return (handle != 0);
 }
 
@@ -49,7 +60,7 @@ void YaPyN_Editor::OnCreate()
 {
 }
 
-//Äåéñòâèÿ, êîòîðûå áóäóò ïðîèñõîäèòü ñ äî÷åðíèìè îêíàìè ïðè èçìåíåíèè ðàçìåðà îêíà.
+//Ð”ÐµÐ¹ÑÑ‚Ð²Ð¸Ñ, ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ðµ Ð±ÑƒÐ´ÑƒÑ‚ Ð¿Ñ€Ð¾Ð¸ÑÑ…Ð¾Ð´Ð¸Ñ‚ÑŒ Ñ Ð´Ð¾Ñ‡ÐµÑ€Ð½Ð¸Ð¼Ð¸ Ð¾ÐºÐ½Ð°Ð¼Ð¸ Ð¿Ñ€Ð¸ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ð¸ Ñ€Ð°Ð·Ð¼ÐµÑ€Ð° Ð¾ÐºÐ½Ð°.
 void YaPyN_Editor::OnSize()
 {
 }
@@ -62,12 +73,11 @@ void YaPyN_Editor::OnDestroy()
 bool YaPyN_Editor::OnClose()
 {
 	if( changed ) {
-		switch (MessageBox(handle, L"Âû ââåëè òåêñò. Ñîõðàíèòü?", L"Çàâåðøåíèå ðàáîòû", MB_YESNOCANCEL))
+		switch (MessageBox(handle, L"Ð’Ñ‹ Ð²Ð²ÐµÐ»Ð¸ Ñ‚ÐµÐºÑÑ‚. Ð¡Ð¾Ñ…Ñ€Ð°Ð½Ð¸Ñ‚ÑŒ?", L"Ð—Ð°Ð²ÐµÑ€ÑˆÐµÐ½Ð¸Ðµ Ñ€Ð°Ð±Ð¾Ñ‚Ñ‹", MB_YESNOCANCEL))
 		{
 			case IDYES:
 			{
-				// Ïîêà ôóíêöèè åù¸ íåò.
-				// save();
+				saveFile(filePathToSave);
 				return true;
 			}
 			case IDNO:
@@ -79,8 +89,56 @@ bool YaPyN_Editor::OnClose()
 				return false;
 			}
 		}
+	} else {
+		switch (MessageBox(handle, L"Do you really want to leave?", L"Exit", MB_YESNO | MB_ICONWARNING)) {
+			case IDNO:
+			{
+				return false;
+			}
+			case IDYES:
+			{
+				return true;
+			}
+		}
 	}
 	return true;
+}
+
+void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	if( HIWORD(wParam) == 0 ) {
+		/*
+		switch( LOWORD(wParam) ) {
+			case ID_FILE_EXIT:
+			{
+				OnClose();
+				break;
+			}
+			case ID_FILE_SAVE:
+			{
+				saveFile(filePathToSave);
+				break;
+			}
+			case ID_FILE_OPEN:
+			{
+				loadFile(filePathToLoad);
+				break;
+			}
+			default:
+			{
+				break;
+			}
+		}
+		*/
+	}
+}
+
+void YaPyN_Editor::saveFile(std::string pathToFile)
+{
+}
+
+void YaPyN_Editor::loadFile(std::string pathToFile)
+{
 }
 
 LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -111,18 +169,17 @@ LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 		case WM_CLOSE:
 		{
 			if( window->OnClose() ) {
+				::PostQuitMessage(0);
 				return DefWindowProc(hwnd, message, wParam, lParam);
 			} else {
 				return 0;
 			}
 		}
-		/*
 		case WM_COMMAND:
 		{
-			window->OnCommand(wParam, lParam);
+			window->OnCommand(hwnd, message, wParam, lParam);
 			return DefWindowProc(hwnd, message, wParam, lParam);
 		}
-		*/
 		case WM_DESTROY:
 		{
 			window->OnDestroy();
