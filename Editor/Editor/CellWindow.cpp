@@ -7,7 +7,7 @@ const int heightOfString = 16;
 
 CellWindow::CellWindow()
 {
-	handle = 0;
+	handleCellWindow = 0;
 	height = MAGIC_NUMBER;
 }
 
@@ -15,7 +15,7 @@ void CellWindow::Create(HWND parentHandle)
 {
 	checkHandle(parentHandle);
 
-	handle = CreateWindowEx(0,
+	handleCellWindow = CreateWindowEx(0,
 		L"EDIT",
 		0,
 		WS_CHILD | WS_VISIBLE | ES_LEFT | ES_MULTILINE,
@@ -28,20 +28,20 @@ void CellWindow::Create(HWND parentHandle)
 		GetModuleHandle(0),
 		0);
 
-	checkHandle(handle);
+	checkHandle(handleCellWindow);
 
 	init();
-	SetFocus(handle);
+	SetFocus(handleCellWindow);
 }
 
 void CellWindow::Show(int cmdShow)
 {
-	ShowWindow(handle, cmdShow);
+	ShowWindow(handleCellWindow, cmdShow);
 }
 
 HWND CellWindow::getHandle() const
 {
-	return handle;
+	return handleCellWindow;
 }
 
 unsigned int CellWindow::getHeight() const
@@ -66,5 +66,5 @@ void CellWindow::init()
 	HGLOBAL handleData = ::LoadResource(module, resourseHandle);
 	DWORD size = ::SizeofResource(module, resourseHandle);
 	LPVOID data = LockResource(handleData);
-	SetWindowText(handle, reinterpret_cast<LPCWSTR>(data));
+	SetWindowText(handleCellWindow, reinterpret_cast<LPCWSTR>(data));
 }

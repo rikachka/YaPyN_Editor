@@ -20,7 +20,7 @@ public:
 
 private:
 
-	HWND handle;
+	HWND handleCellWindow;
 	unsigned int height;
 
 	void init();
