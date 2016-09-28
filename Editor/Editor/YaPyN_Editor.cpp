@@ -76,7 +76,7 @@ void YaPyN_Editor::OnCreate()
 	createCell();
 }
 
-void YaPyN_Editor::OnSize(WPARAM wParam)
+void YaPyN_Editor::OnSize()
 {
 	InvalidateRect(handle, NULL, FALSE);
 	PAINTSTRUCT paintStruct;
@@ -180,6 +180,10 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 				changed = true;
 				break;
 			}
+			case EN_UPDATE:
+			{
+				resizeCell(wParam, lParam);
+			}
 			// Здесь будет меню, но пока его нет.
 			// Здесь будет акселлератор, но пока его нет.
 		}
@@ -242,6 +246,16 @@ void YaPyN_Editor::deleteCell()
 	cellsAndHandles.erase(cellAndHandle);
 }
 
+void YaPyN_Editor::resizeCell(WPARAM wParam, LPARAM lParam)
+{
+	HWND handleCell = reinterpret_cast<HWND>(lParam);
+	CellWindow* cell = cellsAndHandles.find(handleCell)->second;
+	cell->increaseHeight();
+	SendMessage(handle, WM_SIZE, 0, 0);
+
+	//MessageBox(NULL, L"Тест", L"Тест", MB_OK);
+}
+
 LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if( message == WM_NCCREATE ) {
@@ -264,7 +278,7 @@ LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 		}
 		case WM_SIZE:
 		{
-			window->OnSize(wParam);
+			window->OnSize();
 			return DefWindowProc(hwnd, message, wParam, lParam);
 		}
 		case WM_CLOSE:

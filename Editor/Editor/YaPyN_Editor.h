@@ -19,7 +19,7 @@ protected:
 
 	void OnNCCreate(HWND hwnd);
 	void OnCreate();
-	void OnSize(WPARAM wParam);
+	void OnSize();
 	void OnDestroy();
 	bool OnClose();
 	void OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -30,6 +30,7 @@ private:
 	HWND hWndToolBar;
 	std::list<CellWindow> childrensWindow;
 	std::map<HWND, CellWindow*> cellsAndHandles;
+
 	static const int sizeBetweenCells;
 	static const int marginLeftRightCells;
 
@@ -43,6 +44,7 @@ private:
 
 	void createCell();
 	void deleteCell();
+	void resizeCell(WPARAM wParam, LPARAM lParam);
 
 	static LRESULT __stdcall windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };

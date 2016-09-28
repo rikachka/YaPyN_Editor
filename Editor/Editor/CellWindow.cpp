@@ -1,7 +1,9 @@
 ﻿#include "CellWindow.h"
 
 // Временный размер окна текста.
-const int MAGIC_NUMBER = 100;
+const int MAGIC_NUMBER = 34;
+// Временный размер одной строчки.
+const int heightOfString = 16;
 
 CellWindow::CellWindow()
 {
@@ -16,7 +18,7 @@ void CellWindow::Create(HWND parentHandle)
 	handle = CreateWindowEx(0,
 		L"EDIT",
 		0,
-		WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_LEFT | ES_MULTILINE,
+		WS_CHILD | WS_VISIBLE | ES_LEFT | ES_MULTILINE,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
@@ -45,6 +47,11 @@ HWND CellWindow::getHandle() const
 unsigned int CellWindow::getHeight() const
 {
 	return height;
+}
+
+void CellWindow::increaseHeight()
+{
+	height += heightOfString;
 }
 
 bool operator== (const CellWindow& left, const CellWindow& right)
