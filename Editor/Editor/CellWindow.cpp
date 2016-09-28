@@ -47,6 +47,11 @@ unsigned int CellWindow::getHeight() const
 	return height;
 }
 
+bool operator== (const CellWindow& left, const CellWindow& right)
+{
+	return left.getHandle() == right.getHandle();
+}
+
 void CellWindow::init()
 {
 	HMODULE module = ::GetModuleHandle(0);

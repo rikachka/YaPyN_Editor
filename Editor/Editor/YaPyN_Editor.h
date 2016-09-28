@@ -29,6 +29,7 @@ private:
 	HWND handle;
 	HWND hWndToolBar;
 	std::list<CellWindow> childrensWindow;
+	std::map<HWND, CellWindow*> cellsAndHandles;
 	static const int sizeBetweenCells;
 	static const int marginLeftRightCells;
 
@@ -41,6 +42,7 @@ private:
 	void createToolbar();
 
 	void createCell();
+	void deleteCell();
 
 	static LRESULT __stdcall windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
