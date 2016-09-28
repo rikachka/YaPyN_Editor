@@ -1,3 +1,4 @@
+﻿#pragma once
 
 #include "precompiled.h"
 
@@ -12,6 +13,7 @@ public:
 
 	HWND getHandle();
 
+	/* На будущее.
 	getData();
 	*/
 
