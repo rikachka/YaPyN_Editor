@@ -1,6 +1,6 @@
-#include <Windows.h>
+﻿#include <Windows.h>
 
-#include "precompiled.h"
+#include "YaPyN_Editor.h"
 
 int WINAPI wWinMain( HINSTANCE instance, HINSTANCE prevInstance, LPWSTR commandLine, int cmdShow )
 {
