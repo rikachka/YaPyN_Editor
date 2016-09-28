@@ -11,15 +11,14 @@ public:
 
 	void Show(int cmdShow);
 
-	HWND getHandle();
+	HWND getHandle() const;
 
-	/* На будущее.
-	getData();
-	*/
+	unsigned int getHeight() const;
 
 private:
 
 	HWND handle;
+	unsigned int height;
 
 	void init();
 };

@@ -3,8 +3,9 @@
 // Временные путь для сохранения/загрузки.
 const std::string filePathToLoad = "file.txt";
 const std::string filePathToSave = "file.txt";
-// Временный размер окна текста.
-const int MAGIC_NUMBER = 100;
+
+const int YaPyN_Editor::sizeBetweenCells = 10;
+const int YaPyN_Editor::marginLeftRightCells = 8;
 
 YaPyN_Editor::YaPyN_Editor()
 {
@@ -38,7 +39,7 @@ bool YaPyN_Editor::Create()
 	CreateWindowEx(0, 
 		L"YaPyN_Editor",
 		L"YaPyN Editor v1.0",
-		WS_EX_OVERLAPPEDWINDOW | WS_SIZEBOX | WS_SYSMENU,
+		WS_EX_OVERLAPPEDWINDOW | WS_SIZEBOX | WS_SYSMENU | WS_VSCROLL,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
@@ -48,10 +49,8 @@ bool YaPyN_Editor::Create()
 		GetModuleHandle(0),
 		this);
 
-	CreateToolbar();
-	if( handle == 0 ) {
-		MessageBox(handle, L"Error: CreateWindowEx return 0", NULL, MB_OK);
-	}
+	createToolbar();
+	checkHandle(handle);
 	return (handle != 0);
 }
 
@@ -70,9 +69,15 @@ void YaPyN_Editor::OnNCCreate(HWND hwnd)
 
 void YaPyN_Editor::OnCreate()
 {
-	CellWindow cell;
-	childrensWindow.push_back(std::move(cell));
-	childrensWindow.back().Create(handle);
+	createCell();
+	createCell();
+	createCell();
+	createCell();
+	createCell();
+	createCell();
+	createCell();
+	createCell();
+	createCell();
 }
 
 void YaPyN_Editor::OnSize(WPARAM wParam)
@@ -89,7 +94,13 @@ void YaPyN_Editor::OnSize(WPARAM wParam)
 	RECT rect;
 	::GetClientRect(handle, &rect);
 
-	SetWindowPos(childrensWindow.back().getHandle(), HWND_TOP, rect.left, rect.top, rect.right - rect.left, MAGIC_NUMBER, 0);
+	int currentTop = rect.top + sizeBetweenCells;
+	for( auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window ) {
+		LONG leftBorder = rect.left + marginLeftRightCells;
+		LONG width = rect.right - rect.left - 2 * marginLeftRightCells;
+		SetWindowPos(window->getHandle(), HWND_TOP, leftBorder, currentTop, width, window->getHeight(), 0);
+		currentTop += sizeBetweenCells + window->getHeight();
+	}
 }
 
 void YaPyN_Editor::OnDestroy()
@@ -150,6 +161,14 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 				loadFile(filePathToLoad);
 				break;
 			}
+			case ID_CELL_ADD:
+			{
+				createCell();
+			}
+			case ID_CELL_DELETE:
+			{
+
+			}
 			default:
 			{
 				break;
@@ -176,7 +195,7 @@ void YaPyN_Editor::loadFile(std::string pathToFile)
 {
 }
 
-void YaPyN_Editor::CreateToolbar()
+void YaPyN_Editor::createToolbar()
 {
 	/*
 	TBBUTTON tbb[] = {
@@ -204,6 +223,13 @@ void YaPyN_Editor::CreateToolbar()
 	};
 	SendMessage(hWndToolBar, TB_ADDBUTTONS, _countof(tbButtonsAdd), reinterpret_cast<LPARAM>(tbButtonsAdd));
 	*/
+}
+
+void YaPyN_Editor::createCell()
+{
+	CellWindow cell;
+	childrensWindow.push_back(std::move(cell));
+	childrensWindow.back().Create(handle);
 }
 
 LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)

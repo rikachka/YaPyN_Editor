@@ -29,6 +29,8 @@ private:
 	HWND handle;
 	HWND hWndToolBar;
 	std::list<CellWindow> childrensWindow;
+	static const int sizeBetweenCells;
+	static const int marginLeftRightCells;
 
 	bool changed;
 
@@ -36,9 +38,9 @@ private:
 
 	void saveFile(std::string pathToFile);
 	void loadFile(std::string pathToFile);
-	void CreateToolbar();
+	void createToolbar();
 
-	LRESULT OnControlColorEdit(HDC hdc);
+	void createCell();
 
 	static LRESULT __stdcall windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };

@@ -1,8 +1,12 @@
 ﻿#include "CellWindow.h"
 
+// Временный размер окна текста.
+const int MAGIC_NUMBER = 100;
+
 CellWindow::CellWindow()
 {
 	handle = 0;
+	height = MAGIC_NUMBER;
 }
 
 void CellWindow::Create(HWND parentHandle)
@@ -33,16 +37,15 @@ void CellWindow::Show(int cmdShow)
 	ShowWindow(handle, cmdShow);
 }
 
-HWND CellWindow::getHandle()
+HWND CellWindow::getHandle() const
 {
 	return handle;
 }
 
-/*
-CellWindow::getData()
+unsigned int CellWindow::getHeight() const
 {
+	return height;
 }
-*/
 
 void CellWindow::init()
 {
