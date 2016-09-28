@@ -1,11 +1,15 @@
-#pragma once
+﻿#pragma once
 
 #include <Windows.h>
-//#include "resource.h"
 #include <string>
-#include "CommCtrl.h"
+#include <assert.h>
+#include <list>
+#include <memory>
 
-#include "YaPyN_Editor.h"
+
+#include "CommCtrl.h"
 #include "resource.h"
 
 const int SuccessDestroyWindowValue = 0;
+
+void checkHandle(HWND handle);

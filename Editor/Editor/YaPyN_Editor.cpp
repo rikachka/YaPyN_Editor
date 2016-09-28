@@ -1,13 +1,23 @@
 ﻿#include "YaPyN_Editor.h"
 
 // Временные путь для сохранения/загрузки.
-std::string filePathToLoad = "file.txt";
-std::string filePathToSave = "file.txt";
+const std::string filePathToLoad = "file.txt";
+const std::string filePathToSave = "file.txt";
+// Временный размер окна текста.
+const int MAGIC_NUMBER = 100;
 
 YaPyN_Editor::YaPyN_Editor()
 {
 	handle = 0;
 	changed = false;
+	childrensWindow.resize(0);
+}
+
+YaPyN_Editor::~YaPyN_Editor()
+{
+	handle = 0;
+	changed = false;
+	childrensWindow.resize(0);
 }
 
 bool YaPyN_Editor::RegisterClass()
@@ -48,6 +58,9 @@ bool YaPyN_Editor::Create()
 void YaPyN_Editor::Show(int cmdShow)
 {
 	ShowWindow(handle, cmdShow);
+	for( auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window ) {
+		window->Show(cmdShow);
+	}
 }
 
 void YaPyN_Editor::OnNCCreate(HWND hwnd)
@@ -57,11 +70,26 @@ void YaPyN_Editor::OnNCCreate(HWND hwnd)
 
 void YaPyN_Editor::OnCreate()
 {
+	CellWindow cell;
+	childrensWindow.push_back(std::move(cell));
+	childrensWindow.back().Create(handle);
 }
 
-//Действия, которые будут происходить с дочерними окнами при изменении размера окна.
-void YaPyN_Editor::OnSize()
+void YaPyN_Editor::OnSize(WPARAM wParam)
 {
+	InvalidateRect(handle, NULL, FALSE);
+	PAINTSTRUCT paintStruct;
+	BeginPaint(handle, &paintStruct);
+
+	HBRUSH brush;
+	brush = CreateSolidBrush(RGB(100, 150, 200));
+	FillRect(paintStruct.hdc, &paintStruct.rcPaint, brush);
+	EndPaint(handle, &paintStruct);
+
+	RECT rect;
+	::GetClientRect(handle, &rect);
+
+	SetWindowPos(childrensWindow.back().getHandle(), HWND_TOP, rect.left, rect.top, rect.right - rect.left, MAGIC_NUMBER, 0);
 }
 
 void YaPyN_Editor::OnDestroy()
@@ -106,7 +134,6 @@ bool YaPyN_Editor::OnClose()
 void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if( HIWORD(wParam) == 0 ) {
-		/*
 		switch( LOWORD(wParam) ) {
 			case ID_FILE_EXIT:
 			{
@@ -128,7 +155,16 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 				break;
 			}
 		}
-		*/
+	} else {
+		switch( HIWORD(wParam) ) {
+			case EN_CHANGE:
+			{
+				changed = true;
+				break;
+			}
+			// Здесь будет меню, но пока его нет.
+			// Здесь будет акселлератор, но пока его нет.
+		}
 	}
 }
 
@@ -170,7 +206,6 @@ void YaPyN_Editor::CreateToolbar()
 	*/
 }
 
-
 LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if( message == WM_NCCREATE ) {
@@ -193,7 +228,7 @@ LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 		}
 		case WM_SIZE:
 		{
-			window->OnSize();
+			window->OnSize(wParam);
 			return DefWindowProc(hwnd, message, wParam, lParam);
 		}
 		case WM_CLOSE:
