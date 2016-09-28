@@ -24,6 +24,8 @@ protected:
 	bool OnClose();
 	void OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+	void createToolbar();
+
 private:
 
 	HWND handle;
@@ -39,7 +41,6 @@ private:
 
 	void saveFile(std::string pathToFile);
 	void loadFile(std::string pathToFile);
-	void createToolbar();
 
 	void createCell();
 	void deleteCell();

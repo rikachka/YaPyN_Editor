@@ -157,6 +157,12 @@
     <ClCompile Include="precompiled.cpp" />
     <ClCompile Include="YaPyN_Editor.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="yapyn.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="bitmap1.bmp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
