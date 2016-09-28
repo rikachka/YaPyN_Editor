@@ -4,6 +4,7 @@
 #include <string>
 #include <assert.h>
 #include <list>
+#include <map>
 #include <memory>
 
 

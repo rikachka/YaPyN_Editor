@@ -74,10 +74,6 @@ void YaPyN_Editor::OnCreate()
 	createCell();
 	createCell();
 	createCell();
-	createCell();
-	createCell();
-	createCell();
-	createCell();
 }
 
 void YaPyN_Editor::OnSize(WPARAM wParam)
@@ -111,7 +107,7 @@ void YaPyN_Editor::OnDestroy()
 bool YaPyN_Editor::OnClose()
 {
 	if( changed ) {
-		switch (MessageBox(handle, L"Вы ввели текст. Сохранить?", L"Завершение работы", MB_YESNOCANCEL | MB_ICONWARNING))
+		switch( MessageBox(handle, L"Вы ввели текст. Сохранить?", L"Завершение работы", MB_YESNOCANCEL | MB_ICONWARNING ))
 		{
 			case IDYES:
 			{
@@ -128,7 +124,7 @@ bool YaPyN_Editor::OnClose()
 			}
 		}
 	} else {
-		switch (MessageBox(handle, L"Вы действительно хотите выйти?", L"Завершение работы", MB_YESNO | MB_ICONWARNING)) {
+		switch( MessageBox(handle, L"Вы действительно хотите выйти?", L"Завершение работы", MB_YESNO | MB_ICONWARNING) ) {
 			case IDNO:
 			{
 				return false;
@@ -167,7 +163,10 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			}
 			case ID_CELL_DELETE:
 			{
-
+				if( MessageBox(handle, L"Вы действительно хотите удалить ячейку?",
+					L"Удаление ячейки", MB_YESNO | MB_ICONWARNING) == IDYES ) {
+					deleteCell();
+				}
 			}
 			default:
 			{
@@ -227,9 +226,20 @@ void YaPyN_Editor::createToolbar()
 
 void YaPyN_Editor::createCell()
 {
-	CellWindow cell;
-	childrensWindow.push_back(std::move(cell));
-	childrensWindow.back().Create(handle);
+	childrensWindow.emplace_back(CellWindow());
+	CellWindow* cell = &childrensWindow.back();
+	cell->Create(handle);
+	cellsAndHandles.insert(std::make_pair(cell->getHandle(), cell));
+}
+
+void YaPyN_Editor::deleteCell()
+{
+	HWND hwnd = GetFocus();
+	checkHandle(hwnd);
+	auto cellAndHandle = cellsAndHandles.find(hwnd);
+	SendMessage(hwnd, WM_DESTROY, 0, 0);
+	childrensWindow.remove(*cellAndHandle->second);
+	cellsAndHandles.erase(cellAndHandle);
 }
 
 LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)

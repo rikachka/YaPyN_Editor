@@ -15,6 +15,8 @@ public:
 
 	unsigned int getHeight() const;
 
+	friend bool operator== (const CellWindow& left, const CellWindow& right);
+
 private:
 
 	HWND handle;
