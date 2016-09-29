@@ -11,14 +11,14 @@ const int YaPyN_Editor::marginLeftRightCells = 8;
 
 YaPyN_Editor::YaPyN_Editor()
 {
-	handle = 0;
+	handleMainWindow = 0;
 	changed = false;
 	childrensWindow.resize(0);
 }
 
 YaPyN_Editor::~YaPyN_Editor()
 {
-	handle = 0;
+	handleMainWindow = 0;
 	changed = false;
 	childrensWindow.resize(0);
 }
@@ -52,13 +52,13 @@ bool YaPyN_Editor::Create()
 		this);
 
 	createToolbar();
-	checkHandle(handle);
-	return (handle != 0);
+	checkHandle(handleMainWindow);
+	return (handleMainWindow != 0);
 }
 
 void YaPyN_Editor::Show(int cmdShow)
 {
-	ShowWindow(handle, cmdShow);
+	ShowWindow(handleMainWindow, cmdShow);
 	for( auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window ) {
 		window->Show(cmdShow);
 	}
@@ -66,7 +66,7 @@ void YaPyN_Editor::Show(int cmdShow)
 
 void YaPyN_Editor::OnNCCreate(HWND hwnd)
 {
-	handle = hwnd;
+	handleMainWindow = hwnd;
 }
 
 void YaPyN_Editor::OnCreate()
@@ -78,19 +78,19 @@ void YaPyN_Editor::OnCreate()
 	createCell();
 }
 
-void YaPyN_Editor::OnSize(WPARAM wParam)
+void YaPyN_Editor::OnSize()
 {
-	InvalidateRect(handle, NULL, FALSE);
+	InvalidateRect(handleMainWindow, NULL, FALSE);
 	PAINTSTRUCT paintStruct;
-	BeginPaint(handle, &paintStruct);
+	BeginPaint(handleMainWindow, &paintStruct);
 
 	HBRUSH brush;
 	brush = CreateSolidBrush(RGB(100, 150, 200));
 	FillRect(paintStruct.hdc, &paintStruct.rcPaint, brush);
-	EndPaint(handle, &paintStruct);
+	EndPaint(handleMainWindow, &paintStruct);
 
 	RECT rect;
-	::GetClientRect(handle, &rect);
+	::GetClientRect(handleMainWindow, &rect);
 
 	int currentTop = rect.top + sizeBetweenCells;
 	for( auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window ) {
@@ -109,7 +109,7 @@ void YaPyN_Editor::OnDestroy()
 bool YaPyN_Editor::OnClose()
 {
 	if( changed ) {
-		switch( MessageBox(handle, L"Вы ввели текст. Сохранить?", L"Завершение работы", MB_YESNOCANCEL | MB_ICONWARNING ))
+		switch( MessageBox(handleMainWindow, L"Вы ввели текст. Сохранить?", L"Завершение работы", MB_YESNOCANCEL | MB_ICONWARNING ))
 		{
 			case IDYES:
 			{
@@ -126,7 +126,7 @@ bool YaPyN_Editor::OnClose()
 			}
 		}
 	} else {
-		switch( MessageBox(handle, L"Вы действительно хотите выйти?", L"Завершение работы", MB_YESNO | MB_ICONWARNING) ) {
+		switch( MessageBox(handleMainWindow, L"Вы действительно хотите выйти?", L"Завершение работы", MB_YESNO | MB_ICONWARNING )) {
 			case IDNO:
 			{
 				return false;
@@ -165,7 +165,7 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			}
 			case ID_CELL_DELETE:
 			{
-				if( MessageBox(handle, L"Вы действительно хотите удалить ячейку?",
+				if( MessageBox(handleMainWindow, L"Вы действительно хотите удалить ячейку?",
 					L"Удаление ячейки", MB_YESNO | MB_ICONWARNING) == IDYES ) {
 					deleteCell();
 				}
@@ -181,6 +181,10 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			{
 				changed = true;
 				break;
+			}
+			case EN_UPDATE:
+			{
+				resizeCell(wParam, lParam);
 			}
 			// Здесь будет меню, но пока его нет.
 			// Здесь будет акселлератор, но пока его нет.
@@ -231,7 +235,7 @@ void YaPyN_Editor::createCell()
 {
 	childrensWindow.emplace_back(CellWindow());
 	CellWindow* cell = &childrensWindow.back();
-	cell->Create(handle);
+	cell->Create(handleMainWindow);
 	cellsAndHandles.insert(std::make_pair(cell->getHandle(), cell));
 }
 
@@ -243,6 +247,16 @@ void YaPyN_Editor::deleteCell()
 	SendMessage(hwnd, WM_DESTROY, 0, 0);
 	childrensWindow.remove(*cellAndHandle->second);
 	cellsAndHandles.erase(cellAndHandle);
+}
+
+void YaPyN_Editor::resizeCell(WPARAM wParam, LPARAM lParam)
+{
+	HWND handleCell = reinterpret_cast<HWND>(lParam);
+	CellWindow* cell = cellsAndHandles.find(handleCell)->second;
+	cell->increaseHeight();
+	SendMessage(handle, WM_SIZE, 0, 0);
+
+	//MessageBox(NULL, L"Тест", L"Тест", MB_OK);
 }
 
 LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -267,7 +281,7 @@ LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 		}
 		case WM_SIZE:
 		{
-			window->OnSize(wParam);
+			window->OnSize();
 			return DefWindowProc(hwnd, message, wParam, lParam);
 		}
 		case WM_CLOSE:
