@@ -45,7 +45,8 @@ private:
 
 	void createCell();
 	void deleteCell();
-	void resizeCell(WPARAM wParam, LPARAM lParam);
+	void resizeCell(HWND handleCell);
+	unsigned int getCountsOfStrings(HWND handleCell);
 
 	static LRESULT __stdcall windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
