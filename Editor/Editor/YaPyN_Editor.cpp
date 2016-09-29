@@ -92,7 +92,10 @@ void YaPyN_Editor::OnSize()
 	RECT rect;
 	::GetClientRect(handleMainWindow, &rect);
 
-	int currentTop = rect.top + sizeBetweenCells;
+	RECT toolbarRect;
+	::GetClientRect(handleToolbar, &toolbarRect);
+
+	int currentTop = rect.top + (toolbarRect.bottom - toolbarRect.top) + sizeBetweenCells;
 	for( auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window ) {
 		LONG leftBorder = rect.left + marginLeftRightCells;
 		LONG width = rect.right - rect.left - 2 * marginLeftRightCells;
@@ -163,6 +166,7 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			case ID_CELL_ADD:
 			{
 				createCell();
+				break;
 			}
 			case ID_CELL_DELETE:
 			{
@@ -170,6 +174,7 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 					L"Удаление ячейки", MB_YESNO | MB_ICONWARNING) == IDYES ) {
 					deleteCell();
 				}
+				break;
 			}
 			default:
 			{
@@ -193,24 +198,15 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	}
 }
 
-void YaPyN_Editor::saveFile(std::string pathToFile)
-{
-}
-
-void YaPyN_Editor::loadFile(std::string pathToFile)
-{
-}
-
 void YaPyN_Editor::createToolbar()
 {
-	
 	TBBUTTON tbb[] = {
 		{ STD_FILENEW, ID_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
 		{ STD_FILEOPEN, ID_FILE_OPEN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
 		{ STD_FILESAVE, ID_FILE_SAVE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
 	};
 
-	hWndToolBar = CreateToolbarEx(handle, WS_CHILD | WS_VISIBLE | CCS_TOP, 1,
+	handleToolbar = CreateToolbarEx(handleMainWindow, WS_CHILD | WS_VISIBLE | CCS_TOP, 1,
 		0, HINST_COMMCTRL, IDB_STD_SMALL_COLOR, tbb, _countof(tbb), 0, 0, 0, 0, sizeof(TBBUTTON));
 
 	DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
@@ -222,14 +218,22 @@ void YaPyN_Editor::createToolbar()
 	TBADDBITMAP tb;
 	tb.hInst = NULL;
 	tb.nID = reinterpret_cast<UINT_PTR>(hbm);
-	int imageIndex = SendMessage(hWndToolBar, TB_ADDBITMAP, 0, reinterpret_cast<LPARAM>(&tb));
+	int imageIndex = SendMessage(handleToolbar, TB_ADDBITMAP, 0, reinterpret_cast<LPARAM>(&tb));
 	TBBUTTON tbButtonsAdd[] =
 	{
 		{ imageIndex, ID_CELL_ADD, TBSTATE_ENABLED, BTNS_BUTTON },
 		{ STD_DELETE, ID_CELL_DELETE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
 	};
-	SendMessage(hWndToolBar, TB_ADDBUTTONS, _countof(tbButtonsAdd), reinterpret_cast<LPARAM>(tbButtonsAdd));
-	
+	SendMessage(handleToolbar, TB_ADDBUTTONS, _countof(tbButtonsAdd), reinterpret_cast<LPARAM>(tbButtonsAdd));
+
+}
+
+void YaPyN_Editor::saveFile(std::string pathToFile)
+{
+}
+
+void YaPyN_Editor::loadFile(std::string pathToFile)
+{
 }
 
 void YaPyN_Editor::createCell()

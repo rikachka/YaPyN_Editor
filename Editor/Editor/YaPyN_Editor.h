@@ -29,7 +29,7 @@ protected:
 private:
 
 	HWND handleMainWindow;
-	HWND hWndToolBar;
+	HWND handleToolbar;
 	std::list<CellWindow> childrensWindow;
 	std::map<HWND, CellWindow*> cellsAndHandles;
 
