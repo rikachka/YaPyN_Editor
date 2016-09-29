@@ -14,14 +14,15 @@ public:
 	HWND getHandle() const;
 
 	unsigned int getHeight() const;
-	void increaseHeight();
-
+	bool changeHeight(unsigned int countOfStrings);
+	
 	friend bool operator== (const CellWindow& left, const CellWindow& right);
 
 private:
 
 	HWND handleCellWindow;
 	unsigned int height;
+	unsigned int countOfStrings;
 
 	void init();
 };

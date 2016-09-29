@@ -4,11 +4,14 @@
 const int MAGIC_NUMBER = 34;
 // Временный размер одной строчки.
 const int heightOfString = 16;
+// Временный размер одного символа.
+const long widthOfSymbol = 10;
 
 CellWindow::CellWindow()
 {
 	handleCellWindow = 0;
 	height = MAGIC_NUMBER;
+	countOfStrings = 0;
 }
 
 void CellWindow::Create(HWND parentHandle)
@@ -18,7 +21,7 @@ void CellWindow::Create(HWND parentHandle)
 	handleCellWindow = CreateWindowEx(0,
 		L"EDIT",
 		0,
-		WS_CHILD | WS_VISIBLE | ES_LEFT | ES_MULTILINE,
+		WS_CHILD | WS_VISIBLE | ES_LEFT | ES_MULTILINE | WS_HSCROLL,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
@@ -49,9 +52,13 @@ unsigned int CellWindow::getHeight() const
 	return height;
 }
 
-void CellWindow::increaseHeight()
+bool CellWindow::changeHeight(unsigned int newCountOfStrings)
 {
-	height += heightOfString;
+	bool changed = (countOfStrings != newCountOfStrings);
+	countOfStrings = newCountOfStrings;
+	height = MAGIC_NUMBER + countOfStrings * heightOfString;
+	// Поправить
+	return changed;
 }
 
 bool operator== (const CellWindow& left, const CellWindow& right)

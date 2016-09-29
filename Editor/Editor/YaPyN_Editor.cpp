@@ -5,7 +5,7 @@ const std::string filePathToLoad = "file.txt";
 const std::string filePathToSave = "file.txt";
 
 const int YaPyN_Editor::sizeBetweenCells = 10;
-const int YaPyN_Editor::marginLeftRightCells = 8;
+const int YaPyN_Editor::marginLeftRightCells = 10;
 
 YaPyN_Editor::YaPyN_Editor()
 {
@@ -94,6 +94,7 @@ void YaPyN_Editor::OnSize()
 	for( auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window ) {
 		LONG leftBorder = rect.left + marginLeftRightCells;
 		LONG width = rect.right - rect.left - 2 * marginLeftRightCells;
+		
 		SetWindowPos(window->getHandle(), HWND_TOP, leftBorder, currentTop, width, window->getHeight(), 0);
 		currentTop += sizeBetweenCells + window->getHeight();
 	}
@@ -182,7 +183,7 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			}
 			case EN_UPDATE:
 			{
-				resizeCell(wParam, lParam);
+				resizeCell(reinterpret_cast<HWND>(lParam));
 			}
 			// Здесь будет меню, но пока его нет.
 			// Здесь будет акселлератор, но пока его нет.
@@ -246,14 +247,41 @@ void YaPyN_Editor::deleteCell()
 	cellsAndHandles.erase(cellAndHandle);
 }
 
-void YaPyN_Editor::resizeCell(WPARAM wParam, LPARAM lParam)
+void YaPyN_Editor::resizeCell(HWND handleCell)
 {
-	HWND handleCell = reinterpret_cast<HWND>(lParam);
 	CellWindow* cell = cellsAndHandles.find(handleCell)->second;
-	cell->increaseHeight();
-	SendMessage(handle, WM_SIZE, 0, 0);
 
+	if( cell->changeHeight(getCountsOfStrings(handleCell)) ) {
+		SendMessage(handleMainWindow, WM_SIZE, 0, 0);
+	}
 	//MessageBox(NULL, L"Тест", L"Тест", MB_OK);
+}
+
+unsigned int YaPyN_Editor::getCountsOfStrings(HWND handleCell)
+{
+	CellWindow* cell = cellsAndHandles.find(handleCell)->second;
+
+	unsigned int countOfN = 0;
+	unsigned int indexOfN = 0;
+	unsigned int countOfLongStrings = 0;
+
+	int length = SendMessage(handleCell, WM_GETTEXTLENGTH, 0, 0);
+	std::shared_ptr<wchar_t> text_ptr(new wchar_t[length + 1]);
+	wchar_t* text = text_ptr.get();
+	SendMessage(handleCell, WM_GETTEXT, length + 1, reinterpret_cast<LPARAM>(text));
+
+	if (text[0] = '\n') {
+		++countOfN;
+	}
+	
+	for( int i = 1; i < length; ++i ) {
+		if( text[i] == '\n' ) {
+			++countOfN;
+			indexOfN = i;
+		}
+	}
+
+	return countOfN;
 }
 
 LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
