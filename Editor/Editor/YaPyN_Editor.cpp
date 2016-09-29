@@ -98,6 +98,8 @@ void YaPyN_Editor::OnSize()
 		SetWindowPos(window->getHandle(), HWND_TOP, leftBorder, currentTop, width, window->getHeight(), 0);
 		currentTop += sizeBetweenCells + window->getHeight();
 	}
+
+	SendMessage(handleToolbar, TB_AUTOSIZE, 0, 0);
 }
 
 void YaPyN_Editor::OnDestroy()
