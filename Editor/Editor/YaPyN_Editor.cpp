@@ -1,4 +1,6 @@
-﻿#include "YaPyN_Editor.h"
+﻿#pragma comment(lib, "comctl32.lib")
+
+#include "YaPyN_Editor.h"
 
 // Временные путь для сохранения/загрузки.
 const std::string filePathToLoad = "file.txt";
@@ -28,7 +30,7 @@ bool YaPyN_Editor::RegisterClass()
 	windowClass.cbSize = sizeof(WNDCLASSEX);
 	windowClass.lpfnWndProc = YaPyN_Editor::windowProc;
 	windowClass.hInstance = GetModuleHandle(0);
-	windowClass.lpszMenuName = MAKEINTRESOURCE(IDR_MENU1);
+	windowClass.lpszMenuName = MAKEINTRESOURCE(IDR_MENU1); 
 	windowClass.lpszClassName = L"YaPyN_Editor";
 
 	return (::RegisterClassEx(&windowClass) != 0);
@@ -201,7 +203,7 @@ void YaPyN_Editor::loadFile(std::string pathToFile)
 
 void YaPyN_Editor::createToolbar()
 {
-	/*
+	
 	TBBUTTON tbb[] = {
 		{ STD_FILENEW, ID_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
 		{ STD_FILEOPEN, ID_FILE_OPEN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
@@ -211,10 +213,11 @@ void YaPyN_Editor::createToolbar()
 	hWndToolBar = CreateToolbarEx(handle, WS_CHILD | WS_VISIBLE | CCS_TOP, 1,
 		0, HINST_COMMCTRL, IDB_STD_SMALL_COLOR, tbb, _countof(tbb), 0, 0, 0, 0, sizeof(TBBUTTON));
 
-	//DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
-	//COLORMAP colorMap;
-	//colorMap.from = RGB(100, 100, 100);
-	//colorMap.to = backgroundColor;
+	DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
+	COLORMAP colorMap;
+	colorMap.from = RGB(100, 100, 100);
+	colorMap.to = backgroundColor;
+
 	HBITMAP hbm = CreateMappedBitmap(::GetModuleHandle(0), IDB_BITMAP1, 0, NULL, 1);
 	TBADDBITMAP tb;
 	tb.hInst = NULL;
@@ -226,7 +229,7 @@ void YaPyN_Editor::createToolbar()
 		{ STD_DELETE, ID_CELL_DELETE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
 	};
 	SendMessage(hWndToolBar, TB_ADDBUTTONS, _countof(tbButtonsAdd), reinterpret_cast<LPARAM>(tbButtonsAdd));
-	*/
+	
 }
 
 void YaPyN_Editor::createCell()
