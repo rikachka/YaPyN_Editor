@@ -7,8 +7,7 @@ class YaPyN_Editor
 {
 public:
 	YaPyN_Editor();
-	~YaPyN_Editor();
-		
+
 	static bool RegisterClass();
 
 	bool Create();
@@ -31,7 +30,8 @@ private:
 	HWND handleMainWindow;
 	HWND handleToolbar;
 	std::list<CellWindow> childrensWindow;
-	std::map<HWND, CellWindow*> cellsAndHandles;
+	std::list<CellWindow>::iterator activeCell;
+	std::map<HWND, std::list<CellWindow>::iterator> handlesAndCells;
 
 	static const int sizeBetweenCells;
 	static const int marginLeftRightCells;
