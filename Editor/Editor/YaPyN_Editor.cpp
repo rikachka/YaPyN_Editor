@@ -12,15 +12,10 @@ const int YaPyN_Editor::marginLeftRightCells = 10;
 YaPyN_Editor::YaPyN_Editor()
 {
 	handleMainWindow = 0;
+	handleToolbar = 0;
 	changed = false;
 	childrensWindow.resize(0);
-}
-
-YaPyN_Editor::~YaPyN_Editor()
-{
-	handleMainWindow = 0;
-	changed = false;
-	childrensWindow.resize(0);
+	activeCell = childrensWindow.end();
 }
 
 bool YaPyN_Editor::RegisterClass()
@@ -238,35 +233,46 @@ void YaPyN_Editor::loadFile(std::string pathToFile)
 
 void YaPyN_Editor::createCell()
 {
-	childrensWindow.emplace_back(CellWindow());
-	CellWindow* cell = &childrensWindow.back();
-	cell->Create(handleMainWindow);
-	cellsAndHandles.insert(std::make_pair(cell->getHandle(), cell));
+	activeCell = childrensWindow.emplace(activeCell == childrensWindow.end() ? childrensWindow.end() : ++activeCell, CellWindow());
+	activeCell->Create(handleMainWindow);
+	handlesAndCells.insert(std::make_pair(activeCell->getHandle(), activeCell));
+	SendMessage(handleMainWindow, WM_SIZE, 0, 0);
 }
 
 void YaPyN_Editor::deleteCell()
 {
-	HWND hwnd = GetFocus();
-	checkHandle(hwnd);
-	auto cellAndHandle = cellsAndHandles.find(hwnd);
-	SendMessage(hwnd, WM_DESTROY, 0, 0);
-	childrensWindow.remove(*cellAndHandle->second);
-	cellsAndHandles.erase(cellAndHandle);
+	if( activeCell != childrensWindow.end() ) {
+		HWND hwnd = activeCell->getHandle();
+		checkHandle(hwnd);
+		DestroyWindow(hwnd);
+		auto oldCell = activeCell;
+		auto nextCell = activeCell;
+		++nextCell;
+		activeCell = (nextCell != childrensWindow.end()
+					? nextCell
+					: (activeCell != childrensWindow.begin()
+						? --activeCell
+						: childrensWindow.end()));
+		childrensWindow.erase(oldCell);
+		handlesAndCells.erase(handlesAndCells.find(hwnd));
+		SendMessage(handleMainWindow, WM_SIZE, 0, 0);
+	} else {
+		MessageBox(handleMainWindow, L"Выберите ячейку!", L"Не выбрана ячейка", MB_OK | MB_ICONWARNING);
+	}
 }
 
 void YaPyN_Editor::resizeCell(HWND handleCell)
 {
-	CellWindow* cell = cellsAndHandles.find(handleCell)->second;
+	activeCell = handlesAndCells.find(handleCell)->second;
 
-	if( cell->changeHeight(getCountsOfStrings(handleCell)) ) {
+	if( activeCell->changeHeight(getCountsOfStrings(handleCell)) ) {
 		SendMessage(handleMainWindow, WM_SIZE, 0, 0);
 	}
-	//MessageBox(NULL, L"Тест", L"Тест", MB_OK);
 }
 
 unsigned int YaPyN_Editor::getCountsOfStrings(HWND handleCell)
 {
-	CellWindow* cell = cellsAndHandles.find(handleCell)->second;
+	CellWindow* cell = &*handlesAndCells.find(handleCell)->second;
 
 	unsigned int countOfN = 0;
 	unsigned int indexOfN = 0;
