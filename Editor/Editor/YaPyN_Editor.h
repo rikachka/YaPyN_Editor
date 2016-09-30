@@ -22,6 +22,7 @@ protected:
 	void OnDestroy();
 	bool OnClose();
 	void OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	void OnLBottonUp();
 
 	void createToolbar();
 
@@ -38,9 +39,7 @@ private:
 
 	bool changed;
 
-	HBRUSH activeBrush;
-
-	bool saveFile(std::string pathToFile);
+	bool saveFile();
 	void loadFile(std::string pathToFile);
 
 	void createCell();

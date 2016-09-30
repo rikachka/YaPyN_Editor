@@ -4,7 +4,6 @@
 
 // Временные путь для сохранения/загрузки.
 const std::string filePathToLoad = "file.txt";
-const std::string filePathToSave = "file.txt";
 
 const int YaPyN_Editor::sizeBetweenCells = 10;
 const int YaPyN_Editor::marginLeftRightCells = 10;
@@ -113,8 +112,7 @@ bool YaPyN_Editor::OnClose()
 		{
 			case IDYES:
 			{
-				saveFile(filePathToSave);
-				return true;
+				return saveFile();
 			}
 			case IDNO:
 			{
@@ -151,7 +149,9 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			}
 			case ID_FILE_SAVE:
 			{
-				saveFile(filePathToSave);
+				if( saveFile() ) {
+					changed = false;
+				}
 				break;
 			}
 			case ID_FILE_OPEN:
@@ -194,6 +194,15 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	}
 }
 
+void YaPyN_Editor::OnLBottonUp()
+{
+	HWND handle = GetFocus();
+	auto cell = handlesAndCells.find(handle);
+	if( cell != handlesAndCells.end() ) {
+		activeCell = cell->second;
+	}
+}
+
 void YaPyN_Editor::createToolbar()
 {
 	TBBUTTON tbb[] = {
@@ -224,7 +233,7 @@ void YaPyN_Editor::createToolbar()
 }
 
 // Работает, но неккоректно. Необходимо исправить.
-bool YaPyN_Editor::saveFile(std::string pathToFile)
+bool YaPyN_Editor::saveFile()
 {
 	wchar_t file[maxSizeForFileName];
 	OPENFILENAME openFileName = {};
@@ -375,6 +384,11 @@ LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 		case WM_COMMAND:
 		{
 			window->OnCommand(hwnd, message, wParam, lParam);
+			return DefWindowProc(hwnd, message, wParam, lParam);
+		}
+		case WM_LBUTTONUP:
+		{
+			window->OnLBottonUp();
 			return DefWindowProc(hwnd, message, wParam, lParam);
 		}
 		case WM_DESTROY:
