@@ -8,6 +8,7 @@ const std::string filePathToSave = "file.txt";
 
 const int YaPyN_Editor::sizeBetweenCells = 10;
 const int YaPyN_Editor::marginLeftRightCells = 10;
+const int maxSizeForFileName = 64;
 
 YaPyN_Editor::YaPyN_Editor()
 {
@@ -220,11 +221,38 @@ void YaPyN_Editor::createToolbar()
 		{ STD_DELETE, ID_CELL_DELETE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
 	};
 	SendMessage(handleToolbar, TB_ADDBUTTONS, _countof(tbButtonsAdd), reinterpret_cast<LPARAM>(tbButtonsAdd));
-
 }
 
-void YaPyN_Editor::saveFile(std::string pathToFile)
+// Работает, но неккоректно. Необходимо исправить.
+bool YaPyN_Editor::saveFile(std::string pathToFile)
 {
+	wchar_t file[maxSizeForFileName];
+	OPENFILENAME openFileName = {};
+	openFileName.lStructSize = sizeof(OPENFILENAME);
+	openFileName.lpstrFile = file;
+	openFileName.hwndOwner = handleMainWindow;
+	openFileName.lpstrFile[0] = '\0';
+	openFileName.nMaxFile = sizeof(file);
+
+	bool result;
+	if( result = GetSaveFileName(&openFileName) ) {
+		HANDLE handleFile = CreateFile(file, GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+		for( auto it = childrensWindow.begin(); it != childrensWindow.end(); ++it ) {
+
+			// wchar_t* text = getTextFromCell(it->getHandle());
+			
+			int length = SendMessage(it->getHandle(), WM_GETTEXTLENGTH, 0, 0);
+			std::shared_ptr<wchar_t> text_ptr(new wchar_t[length + 1]);
+			wchar_t* text = text_ptr.get();
+			SendMessage(it->getHandle(), WM_GETTEXT, length + 1, reinterpret_cast<LPARAM>(text));	
+			
+			WriteFile(handleFile, "{\n", 2 * sizeof(wchar_t), 0, 0);
+			WriteFile(handleFile, text, wcslen(text) * sizeof(wchar_t), 0, 0);
+			WriteFile(handleFile, "\n}", 2 * sizeof(wchar_t), 0, 0);
+		}
+		CloseHandle(handleFile);
+	}
+	return result;
 }
 
 void YaPyN_Editor::loadFile(std::string pathToFile)
@@ -278,16 +306,18 @@ unsigned int YaPyN_Editor::getCountsOfStrings(HWND handleCell)
 	unsigned int indexOfN = 0;
 	unsigned int countOfLongStrings = 0;
 
+	//wchar_t* text = getTextFromCell(handleCell);
+	
 	int length = SendMessage(handleCell, WM_GETTEXTLENGTH, 0, 0);
 	std::shared_ptr<wchar_t> text_ptr(new wchar_t[length + 1]);
 	wchar_t* text = text_ptr.get();
 	SendMessage(handleCell, WM_GETTEXT, length + 1, reinterpret_cast<LPARAM>(text));
-
-	if (text[0] = '\n') {
+	
+	if( text[0] = '\n' ) {
 		++countOfN;
 	}
 	
-	for( int i = 1; i < length; ++i ) {
+	for( int i = 1; i < wcslen(text); ++i ) {
 		if( text[i] == '\n' ) {
 			++countOfN;
 			indexOfN = i;
@@ -295,6 +325,17 @@ unsigned int YaPyN_Editor::getCountsOfStrings(HWND handleCell)
 	}
 
 	return countOfN;
+}
+
+// Попытки вынести однотипный кусок получения текста из ячеек, вынеся его в функцию.
+wchar_t* YaPyN_Editor::getTextFromCell(HWND handleCell)
+{
+	int length = SendMessage(handleCell, WM_GETTEXTLENGTH, 0, 0);
+	std::shared_ptr<wchar_t> text_ptr(new wchar_t[length + 1]);
+	wchar_t* text = text_ptr.get();
+	SendMessage(handleCell, WM_GETTEXT, length + 1, reinterpret_cast<LPARAM>(text));
+
+	return text;
 }
 
 LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)

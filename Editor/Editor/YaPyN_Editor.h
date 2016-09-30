@@ -40,13 +40,14 @@ private:
 
 	HBRUSH activeBrush;
 
-	void saveFile(std::string pathToFile);
+	bool saveFile(std::string pathToFile);
 	void loadFile(std::string pathToFile);
 
 	void createCell();
 	void deleteCell();
 	void resizeCell(HWND handleCell);
 	unsigned int getCountsOfStrings(HWND handleCell);
+	wchar_t* getTextFromCell(HWND handleCell);
 
 	static LRESULT __stdcall windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
