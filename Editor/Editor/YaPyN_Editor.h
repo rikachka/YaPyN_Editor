@@ -22,6 +22,7 @@ protected:
 	void OnDestroy();
 	bool OnClose();
 	void OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	void OnLBottonUp();
 
 	void createToolbar();
 
@@ -38,15 +39,14 @@ private:
 
 	bool changed;
 
-	HBRUSH activeBrush;
-
-	void saveFile(std::string pathToFile);
+	bool saveFile();
 	void loadFile(std::string pathToFile);
 
 	void createCell();
 	void deleteCell();
 	void resizeCell(HWND handleCell);
 	unsigned int getCountsOfStrings(HWND handleCell);
+	wchar_t* getTextFromCell(HWND handleCell);
 
 	static LRESULT __stdcall windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
