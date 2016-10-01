@@ -162,7 +162,18 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="bitmap1.bmp" />
+    <Image Include="bitmap2.bmp" />
+    <Image Include="Icons\arrow-up.bmp" />
+    <Image Include="Icons\arrow-up.png" />
+    <Image Include="icons\bitmap4.bmp" />
+    <Image Include="icons\bitmap5.bmp" />
+    <Image Include="icons\bitmap6.bmp" />
+    <Image Include="Icons\plus.png" />
+    <Image Include="icons\up.bmp" />
     <Image Include="toolbar1.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Icons\delete.svg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

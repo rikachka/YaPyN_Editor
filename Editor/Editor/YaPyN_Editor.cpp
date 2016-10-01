@@ -16,6 +16,7 @@ YaPyN_Editor::YaPyN_Editor()
 	changed = false;
 	childrensWindow.resize(0);
 	activeCell = childrensWindow.end();
+	buttonsBitmaps.clear();
 }
 
 bool YaPyN_Editor::RegisterClass()
@@ -127,16 +128,17 @@ bool YaPyN_Editor::OnClose()
 			}
 		}
 	} else {
-		switch( MessageBox(handleMainWindow, L"Вы действительно хотите выйти?", L"Завершение работы", MB_YESNO | MB_ICONWARNING )) {
-			case IDNO:
-			{
-				return false;
-			}
-			case IDYES:
-			{
-				return true;
-			}
-		}
+		//TODO: Вернуть позже. Мешается..
+		//switch( MessageBox(handleMainWindow, L"Вы действительно хотите выйти?", L"Завершение работы", MB_YESNO | MB_ICONWARNING )) {
+		//	case IDNO:
+		//	{
+		//		return false;
+		//	}
+		//	case IDYES:
+		//	{
+		//		return true;
+		//	}
+		//}
 	}
 	return true;
 }
@@ -195,35 +197,102 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	}
 }
 
-void YaPyN_Editor::createToolbar()
-{
-	TBBUTTON tbb[] = {
+void YaPyN_Editor::addToolbarItem(INT_PTR idBitmap, INT_PTR idAction) {
+	HBITMAP hbm = CreateMappedBitmap(::GetModuleHandle(0), idBitmap, 0, NULL, 1);
+	buttonsBitmaps.push_back(hbm);
+	TBADDBITMAP tb;
+	tb.hInst = NULL;
+	tb.nID = reinterpret_cast<UINT_PTR>(hbm);
+	hbm = NULL;
+	int imageIndex = SendMessage(handleToolbar, TB_ADDBITMAP, 0, reinterpret_cast<LPARAM>(&tb));
+	TBBUTTON tbButtonsAdd[] =
+	{
+		{ imageIndex, idAction, TBSTATE_ENABLED, BTNS_BUTTON },
+		{ STD_DELETE, ID_CELL_DELETE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
+	};
+	SendMessage(handleToolbar, TB_ADDBUTTONS, _countof(tbButtonsAdd), reinterpret_cast<LPARAM>(tbButtonsAdd));
+}
+
+void YaPyN_Editor::createToolbar() {
+
+	const int bitmapSize = 16;
+
+	HINSTANCE hInstance = ::GetModuleHandle(0);
+
+	handleToolbar = CreateToolbarEx(handleMainWindow, WS_CHILD | WS_VISIBLE | CCS_TOP, 1,
+				0, HINST_COMMCTRL, IDB_STD_SMALL_COLOR, NULL, 0, 0, 0, 0, 0, sizeof(TBBUTTON));
+
+	//Enable multiple image lists
+	SendMessage(handleToolbar, CCM_SETVERSION, (WPARAM)5, 0);
+
+	//Add icons from default imagelist
+	TBBUTTON tbb_buildin[] = {
 		{ STD_FILENEW, ID_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
 		{ STD_FILEOPEN, ID_FILE_OPEN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
 		{ STD_FILESAVE, ID_FILE_SAVE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
 	};
+	SendMessage(handleToolbar, (UINT)TB_ADDBUTTONS, _countof(tbb_buildin), (LPARAM)&tbb_buildin);
 
-	handleToolbar = CreateToolbarEx(handleMainWindow, WS_CHILD | WS_VISIBLE | CCS_TOP, 1,
-		0, HINST_COMMCTRL, IDB_STD_SMALL_COLOR, tbb, _countof(tbb), 0, 0, 0, 0, sizeof(TBBUTTON));
+	//Create custom imagelist
+	HIMAGELIST hImageList = ImageList_Create(bitmapSize, bitmapSize, ILC_COLOR16 | ILC_MASK, 0, 0);
+	ImageList_Add(hImageList, LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_PLUS)), NULL);
+	ImageList_Add(hImageList, LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_DELETE)), NULL);
+	ImageList_Add(hImageList, LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_UP)), NULL);
+	ImageList_Add(hImageList, LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_DOWN)), NULL);
+	SendMessage(handleToolbar, TB_SETIMAGELIST, (WPARAM)1, (LPARAM)hImageList);
 
-	DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
-	COLORMAP colorMap;
-	colorMap.from = RGB(100, 100, 100);
-	colorMap.to = backgroundColor;
-
-	HBITMAP hbm = CreateMappedBitmap(::GetModuleHandle(0), IDB_BITMAP1, 0, NULL, 1);
-	TBADDBITMAP tb;
-	tb.hInst = NULL;
-	tb.nID = reinterpret_cast<UINT_PTR>(hbm);
-	int imageIndex = SendMessage(handleToolbar, TB_ADDBITMAP, 0, reinterpret_cast<LPARAM>(&tb));
-	TBBUTTON tbButtonsAdd[] =
+	TBBUTTON tbb[] =
 	{
-		{ imageIndex, ID_CELL_ADD, TBSTATE_ENABLED, BTNS_BUTTON },
-		{ STD_DELETE, ID_CELL_DELETE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
+		{ MAKELONG(0, 1), ID_CELL_ADD, TBSTATE_ENABLED, TBSTYLE_BUTTON },
+		{ MAKELONG(1, 1), ID_CELL_DELETE, TBSTATE_ENABLED, TBSTYLE_BUTTON },
+		{ MAKELONG(2, 1), ID_CELL_UP, TBSTATE_ENABLED, TBSTYLE_BUTTON },
+		{ MAKELONG(3, 1), ID_CELL_DOWN, TBSTATE_ENABLED, TBSTYLE_BUTTON },
 	};
-	SendMessage(handleToolbar, TB_ADDBUTTONS, _countof(tbButtonsAdd), reinterpret_cast<LPARAM>(tbButtonsAdd));
 
+	SendMessage(handleToolbar, (UINT)TB_ADDBUTTONS, _countof(tbb), (LPARAM)&tbb);
 }
+
+//void YaPyN_Editor::createToolbar()
+//{
+//	TBBUTTON tbb[] = {
+//		{ STD_FILENEW, ID_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
+//		{ STD_FILEOPEN, ID_FILE_OPEN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
+//		{ STD_FILESAVE, ID_FILE_SAVE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
+//	};
+//
+//	handleToolbar = CreateToolbarEx(handleMainWindow, WS_CHILD | WS_VISIBLE | CCS_TOP, 1,
+//		0, HINST_COMMCTRL, IDB_STD_SMALL_COLOR, tbb, _countof(tbb), 0, 0, 0, 0, sizeof(TBBUTTON));
+//
+//	DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
+//	COLORMAP colorMap;
+//	colorMap.from = RGB(100, 100, 100);
+//	colorMap.to = backgroundColor;
+//
+//	//addToolbarItem(IDB_PLUS, ID_CELL_ADD);
+//	addToolbarItem(IDB_DELETE, ID_CELL_DELETE);
+//
+//	//HBITMAP hbm = CreateMappedBitmap(::GetModuleHandle(0), IDB_BITMAP3, 0, NULL, 1);
+//	//TBADDBITMAP tb;
+//	//tb.hInst = NULL;
+//	//tb.nID = reinterpret_cast<UINT_PTR>(hbm);
+//	//int imageIndex = SendMessage(handleToolbar, TB_ADDBITMAP, 0, reinterpret_cast<LPARAM>(&tb));
+//	//TBBUTTON tbButtonsAdd[] =
+//	//{
+//	//	{ imageIndex, ID_CELL_ADD, TBSTATE_ENABLED, BTNS_BUTTON },
+//	//};
+//	//SendMessage(handleToolbar, TB_ADDBUTTONS, _countof(tbButtonsAdd), reinterpret_cast<LPARAM>(tbButtonsAdd));
+//
+//	//HBITMAP hbm2 = CreateMappedBitmap(::GetModuleHandle(0), IDB_BITMAP3, 0, NULL, 1);
+//	//TBADDBITMAP tb2;
+//	//tb2.hInst = HINST_COMMCTRL;
+//	//tb2.nID = IDB_BITMAP3;
+//	//int imageIndex2 = SendMessage(handleToolbar, TB_ADDBITMAP, 0, reinterpret_cast<LPARAM>(&tb2));
+//	//TBBUTTON tbButtonsAdd2[] =
+//	//{
+//	//	{ imageIndex2, ID_CELL_DELETE, TBSTATE_ENABLED, BTNS_BUTTON },
+//	//};
+//	//SendMessage(handleToolbar, TB_ADDBUTTONS, _countof(tbButtonsAdd2), reinterpret_cast<LPARAM>(tbButtonsAdd2));
+//}
 
 void YaPyN_Editor::saveFile(std::string pathToFile)
 {

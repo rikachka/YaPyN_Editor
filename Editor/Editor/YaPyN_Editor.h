@@ -40,6 +40,8 @@ private:
 
 	HBRUSH activeBrush;
 
+	std::vector<HBITMAP> buttonsBitmaps;
+
 	void saveFile(std::string pathToFile);
 	void loadFile(std::string pathToFile);
 
@@ -47,6 +49,8 @@ private:
 	void deleteCell();
 	void resizeCell(HWND handleCell);
 	unsigned int getCountsOfStrings(HWND handleCell);
+
+	void addToolbarItem(INT_PTR idBitmap, INT_PTR idAction);
 
 	static LRESULT __stdcall windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
