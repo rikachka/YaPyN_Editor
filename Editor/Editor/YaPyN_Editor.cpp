@@ -175,6 +175,16 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 				}
 				break;
 			}
+			case ID_CELL_UP:
+			{
+				moveUpCell();
+				break;
+			}
+			case ID_CELL_DOWN:
+			{
+				moveDownCell();
+				break;
+			}
 			default:
 			{
 				break;
@@ -195,22 +205,6 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			// Здесь будет акселлератор, но пока его нет.
 		}
 	}
-}
-
-void YaPyN_Editor::addToolbarItem(INT_PTR idBitmap, INT_PTR idAction) {
-	HBITMAP hbm = CreateMappedBitmap(::GetModuleHandle(0), idBitmap, 0, NULL, 1);
-	buttonsBitmaps.push_back(hbm);
-	TBADDBITMAP tb;
-	tb.hInst = NULL;
-	tb.nID = reinterpret_cast<UINT_PTR>(hbm);
-	hbm = NULL;
-	int imageIndex = SendMessage(handleToolbar, TB_ADDBITMAP, 0, reinterpret_cast<LPARAM>(&tb));
-	TBBUTTON tbButtonsAdd[] =
-	{
-		{ imageIndex, idAction, TBSTATE_ENABLED, BTNS_BUTTON },
-		{ STD_DELETE, ID_CELL_DELETE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
-	};
-	SendMessage(handleToolbar, TB_ADDBUTTONS, _countof(tbButtonsAdd), reinterpret_cast<LPARAM>(tbButtonsAdd));
 }
 
 void YaPyN_Editor::createToolbar() {
@@ -252,48 +246,6 @@ void YaPyN_Editor::createToolbar() {
 	SendMessage(handleToolbar, (UINT)TB_ADDBUTTONS, _countof(tbb), (LPARAM)&tbb);
 }
 
-//void YaPyN_Editor::createToolbar()
-//{
-//	TBBUTTON tbb[] = {
-//		{ STD_FILENEW, ID_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
-//		{ STD_FILEOPEN, ID_FILE_OPEN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
-//		{ STD_FILESAVE, ID_FILE_SAVE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0 },
-//	};
-//
-//	handleToolbar = CreateToolbarEx(handleMainWindow, WS_CHILD | WS_VISIBLE | CCS_TOP, 1,
-//		0, HINST_COMMCTRL, IDB_STD_SMALL_COLOR, tbb, _countof(tbb), 0, 0, 0, 0, sizeof(TBBUTTON));
-//
-//	DWORD backgroundColor = GetSysColor(COLOR_BTNFACE);
-//	COLORMAP colorMap;
-//	colorMap.from = RGB(100, 100, 100);
-//	colorMap.to = backgroundColor;
-//
-//	//addToolbarItem(IDB_PLUS, ID_CELL_ADD);
-//	addToolbarItem(IDB_DELETE, ID_CELL_DELETE);
-//
-//	//HBITMAP hbm = CreateMappedBitmap(::GetModuleHandle(0), IDB_BITMAP3, 0, NULL, 1);
-//	//TBADDBITMAP tb;
-//	//tb.hInst = NULL;
-//	//tb.nID = reinterpret_cast<UINT_PTR>(hbm);
-//	//int imageIndex = SendMessage(handleToolbar, TB_ADDBITMAP, 0, reinterpret_cast<LPARAM>(&tb));
-//	//TBBUTTON tbButtonsAdd[] =
-//	//{
-//	//	{ imageIndex, ID_CELL_ADD, TBSTATE_ENABLED, BTNS_BUTTON },
-//	//};
-//	//SendMessage(handleToolbar, TB_ADDBUTTONS, _countof(tbButtonsAdd), reinterpret_cast<LPARAM>(tbButtonsAdd));
-//
-//	//HBITMAP hbm2 = CreateMappedBitmap(::GetModuleHandle(0), IDB_BITMAP3, 0, NULL, 1);
-//	//TBADDBITMAP tb2;
-//	//tb2.hInst = HINST_COMMCTRL;
-//	//tb2.nID = IDB_BITMAP3;
-//	//int imageIndex2 = SendMessage(handleToolbar, TB_ADDBITMAP, 0, reinterpret_cast<LPARAM>(&tb2));
-//	//TBBUTTON tbButtonsAdd2[] =
-//	//{
-//	//	{ imageIndex2, ID_CELL_DELETE, TBSTATE_ENABLED, BTNS_BUTTON },
-//	//};
-//	//SendMessage(handleToolbar, TB_ADDBUTTONS, _countof(tbButtonsAdd2), reinterpret_cast<LPARAM>(tbButtonsAdd2));
-//}
-
 void YaPyN_Editor::saveFile(std::string pathToFile)
 {
 }
@@ -330,6 +282,12 @@ void YaPyN_Editor::deleteCell()
 	} else {
 		MessageBox(handleMainWindow, L"Выберите ячейку!", L"Не выбрана ячейка", MB_OK | MB_ICONWARNING);
 	}
+}
+
+void YaPyN_Editor::moveUpCell() {
+}
+
+void YaPyN_Editor::moveDownCell() {
 }
 
 void YaPyN_Editor::resizeCell(HWND handleCell)

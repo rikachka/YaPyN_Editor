@@ -47,6 +47,8 @@ private:
 
 	void createCell();
 	void deleteCell();
+	void moveUpCell();
+	void moveDownCell();
 	void resizeCell(HWND handleCell);
 	unsigned int getCountsOfStrings(HWND handleCell);
 
