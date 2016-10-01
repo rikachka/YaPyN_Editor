@@ -39,6 +39,8 @@ private:
 
 	bool changed;
 
+	std::vector<HBITMAP> buttonsBitmaps;
+
 	bool saveFile();
 	void loadFile(std::string pathToFile);
 
@@ -47,6 +49,8 @@ private:
 	void resizeCell(HWND handleCell);
 	unsigned int getCountsOfStrings(HWND handleCell);
 	wchar_t* getTextFromCell(HWND handleCell);
+
+	void addToolbarItem(INT_PTR idBitmap, INT_PTR idAction);
 
 	static LRESULT __stdcall windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };

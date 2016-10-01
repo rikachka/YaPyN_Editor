@@ -15,16 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="precompiled.h">
-      <Filter>Файлы исходного кода</Filter>
-    </ClInclude>
     <ClInclude Include="YaPyN_Editor.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Файлы ресурсов</Filter>
-    </ClInclude>
     <ClInclude Include="CellWindow.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="precompiled.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>
@@ -54,5 +54,34 @@
     <Image Include="toolbar1.bmp">
       <Filter>Файлы ресурсов</Filter>
     </Image>
+    <Image Include="Icons\plus.png">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="Icons\arrow-up.png">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="bitmap2.bmp">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="Icons\arrow-up.bmp">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="icons\bitmap4.bmp">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="icons\bitmap5.bmp">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="icons\bitmap6.bmp">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+    <Image Include="icons\up.bmp">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Icons\delete.svg">
+      <Filter>Файлы ресурсов</Filter>
+    </None>
   </ItemGroup>
 </Project>
