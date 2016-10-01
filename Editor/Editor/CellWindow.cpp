@@ -18,10 +18,12 @@ void CellWindow::Create(HWND parentHandle)
 {
 	checkHandle(parentHandle);
 
+	//can use ES_AUTOHSCROLL, if we want to move inside the cell only by using the pointer
 	handleCellWindow = CreateWindowEx(0,
 		L"EDIT",
 		0,
-		WS_CHILD | WS_VISIBLE | ES_LEFT | ES_MULTILINE | WS_HSCROLL,
+		WS_CHILD | WS_VISIBLE | ES_LEFT | ES_MULTILINE //| ES_AUTOHSCROLL
+													   | WS_HSCROLL,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
@@ -30,6 +32,9 @@ void CellWindow::Create(HWND parentHandle)
 		0,
 		GetModuleHandle(0),
 		0);
+
+	//TODO: Add scrollbar, when the length of the text is larger than the length of the window
+	ShowScrollBar(handleCellWindow, SB_HORZ, FALSE);
 
 	checkHandle(handleCellWindow);
 
