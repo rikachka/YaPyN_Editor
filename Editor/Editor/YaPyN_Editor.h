@@ -44,9 +44,10 @@ private:
 
 	bool saveFile();
 	bool saveFile(std::string filename);
-	void loadFile(std::string pathToFile);
+	void loadFile(std::string filename);
 
 	void createCell();
+	void createCell(std::wstring text);
 	void deleteCell();
 	void moveUpCell();
 	void moveDownCell();

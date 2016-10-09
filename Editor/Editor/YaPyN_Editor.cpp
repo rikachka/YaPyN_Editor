@@ -333,8 +333,37 @@ bool YaPyN_Editor::saveFile()
 	return result;
 }
 
-void YaPyN_Editor::loadFile(std::string pathToFile)
+void YaPyN_Editor::loadFile(std::string filename)
 {
+	for (auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window) 
+	{
+		DestroyWindow(window->getHandle());
+	}
+	childrensWindow.clear();
+	activeCell = childrensWindow.end();
+	handlesAndCells.clear();
+
+	std::ifstream fin;
+	fin.open(filename);
+	if (!fin) 
+	{
+		MessageBox(handleMainWindow, L"Выберите другой файл!", L"Нет такого файла", MB_OK | MB_ICONWARNING);
+		fin.close();
+		return;
+	}
+	while (!fin.eof()) {
+		std::string text;
+		getline(fin, text, '}');
+		int text_begin = text.find('{');
+		if (text_begin != -1) 
+		{
+			text = text.substr(text_begin + 1);
+			std::wstring wtext(text.begin(), text.end());
+			createCell(wtext);
+		}
+	}
+	fin.close();
+	InvalidateRect(handleMainWindow, NULL, FALSE);
 }
 
 void YaPyN_Editor::createCell()
@@ -342,6 +371,15 @@ void YaPyN_Editor::createCell()
 	activeCell = childrensWindow.emplace(activeCell == childrensWindow.end() ? childrensWindow.end() : ++activeCell, CellWindow());
 	activeCell->Create(handleMainWindow);
 	handlesAndCells.insert(std::make_pair(activeCell->getHandle(), activeCell));
+	SendMessage(handleMainWindow, WM_SIZE, 0, 0);
+}
+
+void YaPyN_Editor::createCell(std::wstring text)
+{
+	activeCell = childrensWindow.emplace(activeCell == childrensWindow.end() ? childrensWindow.end() : ++activeCell, CellWindow());
+	activeCell->Create(handleMainWindow);
+	handlesAndCells.insert(std::make_pair(activeCell->getHandle(), activeCell));
+	::SetWindowText(activeCell->getHandle(), (LPWSTR)text.c_str());
 	SendMessage(handleMainWindow, WM_SIZE, 0, 0);
 }
 
@@ -399,10 +437,9 @@ void YaPyN_Editor::resizeCell(HWND handleCell)
 	activeCell = handlesAndCells.find(handleCell)->second;
 
 	if( activeCell->changeHeight(getCountsOfStrings(handleCell)) ) {
-		SendMessage(handleMainWindow, WM_SIZE, 0, 0);
+		InvalidateRect(handleMainWindow, NULL, FALSE);
+		//SendMessage(handleMainWindow, WM_SIZE, 0, 0);
 	}
-
-	//SendMessage(handleMainWindow, WM_SIZE, 0, 0);
 }
 
 unsigned int YaPyN_Editor::getCountsOfStrings(HWND handleCell)
