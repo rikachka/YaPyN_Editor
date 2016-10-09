@@ -100,6 +100,7 @@ void YaPyN_Editor::OnPaint()
 		currentTop += sizeBetweenCells + window->getHeight();
 	}
 
+	//colours activeCell - useful for debugging
 	//PAINTSTRUCT paintStruct2;
 	//BeginPaint(activeCell->getHandle(), &paintStruct2);
 	//brush = CreateSolidBrush(RGB(0, 250, 0));
@@ -390,12 +391,33 @@ void YaPyN_Editor::deleteCell()
 	} else {
 		MessageBox(handleMainWindow, L"Выберите ячейку!", L"Не выбрана ячейка", MB_OK | MB_ICONWARNING);
 	}
+	InvalidateRect(handleMainWindow, NULL, FALSE);
 }
 
-void YaPyN_Editor::moveUpCell() {
+void YaPyN_Editor::moveUpCell() 
+{
+	if (activeCell != childrensWindow.begin())
+	{
+		auto prevCell = activeCell;
+		activeCell = --activeCell;
+		std::swap(*activeCell, *prevCell);
+		handlesAndCells[activeCell->getHandle()] = activeCell;
+		handlesAndCells[prevCell->getHandle()] = prevCell;
+		InvalidateRect(handleMainWindow, NULL, FALSE);
+	}
 }
 
-void YaPyN_Editor::moveDownCell() {
+void YaPyN_Editor::moveDownCell() 
+{
+	if (activeCell != --childrensWindow.end())
+	{
+		auto prevCell = activeCell;
+		activeCell = ++activeCell;
+		std::swap(*activeCell, *prevCell);
+		handlesAndCells[activeCell->getHandle()] = activeCell;
+		handlesAndCells[prevCell->getHandle()] = prevCell;
+		InvalidateRect(handleMainWindow, NULL, FALSE);
+	}
 }
 
 void YaPyN_Editor::resizeCell(HWND handleCell)
