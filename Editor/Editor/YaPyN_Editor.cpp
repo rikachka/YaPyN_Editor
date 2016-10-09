@@ -3,11 +3,14 @@
 #include "YaPyN_Editor.h"
 
 // Временные путь для сохранения/загрузки.
-const std::string filePathToLoad = "file.txt";
+const std::string mainFilename = "file.txt";
 
 const int YaPyN_Editor::sizeBetweenCells = 10;
 const int YaPyN_Editor::marginLeftRightCells = 10;
 const int maxSizeForFileName = 64;
+
+const char CELL_BEGIN_SYMBOL = '{';
+const char CELL_END_SYMBOL = '}';
 
 YaPyN_Editor::YaPyN_Editor()
 {
@@ -118,37 +121,46 @@ void YaPyN_Editor::OnDestroy()
 	PostQuitMessage(SuccessDestroyWindowValue);
 }
 
+bool YaPyN_Editor::askToSave()
+{
+	switch (MessageBox(handleMainWindow, L"Вы ввели текст. Сохранить?", L"Завершение работы", MB_YESNOCANCEL | MB_ICONWARNING))
+	{
+		case IDYES:
+		{
+			return saveFile(mainFilename);
+		}
+		case IDNO:
+		{
+			return true;
+		}
+		case IDCANCEL:
+		{
+			return false;
+		}
+		default:
+		{
+			return false;
+		}
+	}
+}
+
 bool YaPyN_Editor::OnClose()
 {
 	//TODO: Вернуть позже. Мешается..
-	//if( changed ) {
-	//	switch( MessageBox(handleMainWindow, L"Вы ввели текст. Сохранить?", L"Завершение работы", MB_YESNOCANCEL | MB_ICONWARNING ))
-	//	{
-	//		case IDYES:
-	//		{
-	//			return saveFile();
-	//		}
-	//		case IDNO:
-	//		{
-	//			return true;
-	//		}
-	//		case IDCANCEL:
-	//		{
-	//			return false;
-	//		}
-	//	}
-	//} else {
-		//switch( MessageBox(handleMainWindow, L"Вы действительно хотите выйти?", L"Завершение работы", MB_YESNO | MB_ICONWARNING )) {
-		//	case IDNO:
-		//	{
-		//		return false;
-		//	}
-		//	case IDYES:
-		//	{
-		//		return true;
-		//	}
-		//}
-	//}
+	if( changed ) {
+		askToSave();
+	} else {
+		switch( MessageBox(handleMainWindow, L"Вы действительно хотите выйти?", L"Завершение работы", MB_YESNO | MB_ICONWARNING )) {
+			case IDNO:
+			{
+				return false;
+			}
+			case IDYES:
+			{
+				return true;
+			}
+		}
+	}
 	return true;
 }
 
@@ -163,14 +175,18 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			}
 			case ID_FILE_SAVE:
 			{
-				if( saveFile(filePathToLoad) ) {
+				if( saveFile(mainFilename) ) {
 					changed = false;
 				}
 				break;
 			}
 			case ID_FILE_OPEN:
 			{
-				loadFile(filePathToLoad);
+				if (changed) {
+					if (!askToSave())
+						break;
+				}
+				loadFile(mainFilename);
 				break;
 			}
 			case ID_CELL_ADD:
@@ -280,21 +296,11 @@ void YaPyN_Editor::createToolbar() {
 
 bool YaPyN_Editor::saveFile(std::string filename)
 {
-	//TODO: поддержка русского текста
-	std::ofstream fout;
+	std::wofstream fout;
 	fout.open(filename);
 	for (auto it = childrensWindow.begin(); it != childrensWindow.end(); ++it) {
-		int length = SendMessage(it->getHandle(), WM_GETTEXTLENGTH, 0, 0);
-		length++;
-		wchar_t* text = new wchar_t[length];
-		::GetWindowText(it->getHandle(), (LPWSTR)text, length);
-		fout << "{";
-		for (int i = 0; i < length; i++) 
-		{
-			fout << static_cast<char>(text[i]);
-		}
-		fout << "}\n";
-		delete(text);
+		std::wstring text = it->getText();
+		fout << CELL_BEGIN_SYMBOL << text << CELL_END_SYMBOL << std::endl;
 	}
 	fout.close();
 	return true;
@@ -353,8 +359,8 @@ void YaPyN_Editor::loadFile(std::string filename)
 	}
 	while (!fin.eof()) {
 		std::string text;
-		getline(fin, text, '}');
-		int text_begin = text.find('{');
+		getline(fin, text, CELL_END_SYMBOL);
+		int text_begin = text.find(CELL_BEGIN_SYMBOL);
 		if (text_begin != -1) 
 		{
 			text = text.substr(text_begin + 1);
@@ -376,11 +382,9 @@ void YaPyN_Editor::createCell()
 
 void YaPyN_Editor::createCell(std::wstring text)
 {
-	activeCell = childrensWindow.emplace(activeCell == childrensWindow.end() ? childrensWindow.end() : ++activeCell, CellWindow());
-	activeCell->Create(handleMainWindow);
-	handlesAndCells.insert(std::make_pair(activeCell->getHandle(), activeCell));
+	createCell();
 	::SetWindowText(activeCell->getHandle(), (LPWSTR)text.c_str());
-	SendMessage(handleMainWindow, WM_SIZE, 0, 0);
+	InvalidateRect(handleMainWindow, NULL, FALSE);
 }
 
 void YaPyN_Editor::deleteCell()

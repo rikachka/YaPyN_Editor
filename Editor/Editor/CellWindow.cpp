@@ -80,3 +80,13 @@ void CellWindow::init()
 	LPVOID data = LockResource(handleData);
 	SetWindowText(handleCellWindow, reinterpret_cast<LPCWSTR>(data));
 }
+
+std::wstring CellWindow::getText()
+{
+	int length = SendMessage(handleCellWindow, WM_GETTEXTLENGTH, 0, 0);
+	length++;
+	std::wstring text;
+	text.resize(length);
+	::GetWindowText(handleCellWindow, (LPWSTR)text.c_str(), length);
+	return text;
+}

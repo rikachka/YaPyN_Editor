@@ -4,6 +4,8 @@
 
 int WINAPI wWinMain( HINSTANCE instance, HINSTANCE prevInstance, LPWSTR commandLine, int cmdShow )
 {
+	setlocale(LC_ALL, "Russian");
+
 	if( !YaPyN_Editor::RegisterClass() ) {
 		return -1;
 	}

@@ -45,6 +45,7 @@ private:
 	bool saveFile();
 	bool saveFile(std::string filename);
 	void loadFile(std::string filename);
+	bool askToSave();
 
 	void createCell();
 	void createCell(std::wstring text);
