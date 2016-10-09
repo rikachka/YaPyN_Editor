@@ -53,6 +53,8 @@ private:
 	void moveUpCell();
 	void moveDownCell();
 	void resizeCell(HWND handleCell);
+	void clearCells();
+
 	unsigned int getCountsOfStrings(HWND handleCell);
 	wchar_t* getTextFromCell(HWND handleCell);
 

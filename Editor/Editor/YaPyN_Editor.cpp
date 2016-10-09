@@ -168,6 +168,16 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 {
 	if( HIWORD(wParam) == 0 ) {
 		switch( LOWORD(wParam) ) {
+			case ID_FILE_NEW:
+			{
+				if (changed) {
+					if (!askToSave())
+						break;
+				}
+				clearCells();
+				createCell();
+				break;
+			}
 			case ID_FILE_EXIT:
 			{
 				SendMessage(hWnd, WM_CLOSE, wParam, lParam);
@@ -341,13 +351,7 @@ bool YaPyN_Editor::saveFile()
 
 void YaPyN_Editor::loadFile(std::string filename)
 {
-	for (auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window) 
-	{
-		DestroyWindow(window->getHandle());
-	}
-	childrensWindow.clear();
-	activeCell = childrensWindow.end();
-	handlesAndCells.clear();
+	clearCells();
 
 	std::ifstream fin;
 	fin.open(filename);
@@ -445,6 +449,17 @@ void YaPyN_Editor::resizeCell(HWND handleCell)
 		InvalidateRect(handleMainWindow, NULL, FALSE);
 		//SendMessage(handleMainWindow, WM_SIZE, 0, 0);
 	}
+}
+
+void YaPyN_Editor::clearCells()
+{
+	for (auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window)
+	{
+		DestroyWindow(window->getHandle());
+	}
+	childrensWindow.clear();
+	activeCell = childrensWindow.end();
+	handlesAndCells.clear();
 }
 
 unsigned int YaPyN_Editor::getCountsOfStrings(HWND handleCell)
