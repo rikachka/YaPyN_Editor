@@ -7,6 +7,15 @@ const int heightOfString = 16;
 // Временный размер одного символа.
 const long widthOfSymbol = 10;
 
+
+
+bool operator== (const CellWindow& left, const CellWindow& right)
+{
+	return left.getHandle() == right.getHandle();
+}
+
+
+
 CellWindow::CellWindow()
 {
 	handleCellWindow = 0;
@@ -47,6 +56,18 @@ void CellWindow::Show(int cmdShow)
 	ShowWindow(handleCellWindow, cmdShow);
 }
 
+void CellWindow::init()
+{
+	HMODULE module = ::GetModuleHandle(0);
+	HRSRC resourseHandle = ::FindResource(module, MAKEINTRESOURCE(IDR_TEXT1), L"TEXT");
+	HGLOBAL handleData = ::LoadResource(module, resourseHandle);
+	DWORD size = ::SizeofResource(module, resourseHandle);
+	LPVOID data = LockResource(handleData);
+	SetWindowText(handleCellWindow, reinterpret_cast<LPCWSTR>(data));
+}
+
+
+
 HWND CellWindow::getHandle() const
 {
 	return handleCellWindow;
@@ -64,21 +85,6 @@ bool CellWindow::changeHeight(unsigned int newCountOfStrings)
 	height = MAGIC_NUMBER + countOfStrings * heightOfString;
 	// Поправить
 	return changed;
-}
-
-bool operator== (const CellWindow& left, const CellWindow& right)
-{
-	return left.getHandle() == right.getHandle();
-}
-
-void CellWindow::init()
-{
-	HMODULE module = ::GetModuleHandle(0);
-	HRSRC resourseHandle = ::FindResource(module, MAKEINTRESOURCE(IDR_TEXT1), L"TEXT");
-	HGLOBAL handleData = ::LoadResource(module, resourseHandle);
-	DWORD size = ::SizeofResource(module, resourseHandle);
-	LPVOID data = LockResource(handleData);
-	SetWindowText(handleCellWindow, reinterpret_cast<LPCWSTR>(data));
 }
 
 std::wstring CellWindow::getText()

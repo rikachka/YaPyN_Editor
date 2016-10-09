@@ -103,7 +103,7 @@ void YaPyN_Editor::OnPaint()
 		currentTop += sizeBetweenCells + window->getHeight();
 	}
 
-	//colours activeCell - useful for debugging
+	//Подсвечивает activeCell - нужно для того, чтобы проверять, что activeCell на нужном сell'е
 	//PAINTSTRUCT paintStruct2;
 	//BeginPaint(activeCell->getHandle(), &paintStruct2);
 	//brush = CreateSolidBrush(RGB(0, 250, 0));
@@ -116,37 +116,23 @@ void YaPyN_Editor::OnSize()
 	SendMessage(handleToolbar, TB_AUTOSIZE, 0, 0);
 }
 
+void YaPyN_Editor::OnCellClick()
+{
+	HWND handle = ::GetFocus();
+	auto cell = handlesAndCells.find(handle);
+	if (cell != handlesAndCells.end()) {
+		activeCell = cell->second;
+	}
+	InvalidateRect(handleMainWindow, NULL, FALSE);
+}
+
 void YaPyN_Editor::OnDestroy()
 {
 	PostQuitMessage(SuccessDestroyWindowValue);
 }
 
-bool YaPyN_Editor::askToSave()
-{
-	switch (MessageBox(handleMainWindow, L"Вы ввели текст. Сохранить?", L"Завершение работы", MB_YESNOCANCEL | MB_ICONWARNING))
-	{
-		case IDYES:
-		{
-			return saveFile(mainFilename);
-		}
-		case IDNO:
-		{
-			return true;
-		}
-		case IDCANCEL:
-		{
-			return false;
-		}
-		default:
-		{
-			return false;
-		}
-	}
-}
-
 bool YaPyN_Editor::OnClose()
 {
-	//TODO: Вернуть позже. Мешается..
 	if( changed ) {
 		askToSave();
 	} else {
@@ -163,6 +149,8 @@ bool YaPyN_Editor::OnClose()
 	}
 	return true;
 }
+
+
 
 void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -244,8 +232,6 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 				OnCellClick();
 				break;
 			}
-			// Здесь будет меню, но пока его нет.
-			// Здесь будет акселлератор, но пока его нет.
 			default:
 			{
 				break;
@@ -254,15 +240,75 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	}
 }
 
-void YaPyN_Editor::OnCellClick()
+LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	HWND handle = ::GetFocus();
-	auto cell = handlesAndCells.find(handle);
-	if( cell != handlesAndCells.end() ) {
-		activeCell = cell->second;
+	if (message == WM_NCCREATE) {
+		YaPyN_Editor* window = reinterpret_cast<YaPyN_Editor*> ((reinterpret_cast<CREATESTRUCT*>(lParam))->lpCreateParams);
+		SetLastError(0);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG>(window));
+		if (GetLastError()) {
+			return GetLastError();
+		}
+		window->OnNCCreate(hwnd);
+		return DefWindowProc(hwnd, message, wParam, lParam);
 	}
-	InvalidateRect(handleMainWindow, NULL, FALSE);
+
+	YaPyN_Editor* window = reinterpret_cast<YaPyN_Editor*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+	switch (message) {
+		case WM_CREATE:
+		{
+			window->OnCreate();
+			return DefWindowProc(hwnd, message, wParam, lParam);
+		}
+		case WM_PAINT:
+		{
+			window->OnPaint();
+			return DefWindowProc(hwnd, message, wParam, lParam);
+		}
+		case WM_SIZE:
+		{
+			window->OnSize();
+			return DefWindowProc(hwnd, message, wParam, lParam);
+		}
+		case WM_CLOSE:
+		{
+			if (window->OnClose()) {
+				::PostQuitMessage(0);
+				return DefWindowProc(hwnd, message, wParam, lParam);
+			}
+			else {
+				return 0;
+			}
+		}
+		case WM_COMMAND:
+		{
+			window->OnCommand(hwnd, message, wParam, lParam);
+			return DefWindowProc(hwnd, message, wParam, lParam);
+		}
+		case WM_DESTROY:
+		{
+			window->OnDestroy();
+			return SuccessDestroyWindowValue;
+		}
+		case WM_CTLCOLOREDIT:
+		{
+			HDC hdc = (HDC)wParam;
+			HBRUSH hbr = 0;
+			if (lParam == (long)GetFocus())
+			{
+				hbr = CreateSolidBrush(RGB(255, 255, 0));
+				SetBkColor(hdc, RGB(255, 255, 0));
+			}
+			return (LRESULT)hbr;
+		}
+		default:
+		{
+			return DefWindowProc(hwnd, message, wParam, lParam);
+		}
+	}
 }
+
+
 
 void YaPyN_Editor::createToolbar() {
 
@@ -304,6 +350,7 @@ void YaPyN_Editor::createToolbar() {
 }
 
 
+
 bool YaPyN_Editor::saveFile(std::string filename)
 {
 	std::wofstream fout;
@@ -316,8 +363,8 @@ bool YaPyN_Editor::saveFile(std::string filename)
 	return true;
 }
 
-
-// Работает, но неккоректно. Необходимо исправить.
+//TODO: Внутрь нужно вставить функцию saveFile(std::string filename)
+// Работает, но неккоректно. Необходимо исправить. 
 bool YaPyN_Editor::saveFile()
 {
 	wchar_t file[maxSizeForFileName];
@@ -375,6 +422,31 @@ void YaPyN_Editor::loadFile(std::string filename)
 	fin.close();
 	InvalidateRect(handleMainWindow, NULL, FALSE);
 }
+
+bool YaPyN_Editor::askToSave()
+{
+	switch (MessageBox(handleMainWindow, L"Вы ввели текст. Сохранить?", L"Завершение работы", MB_YESNOCANCEL | MB_ICONWARNING))
+	{
+		case IDYES:
+		{
+			return saveFile(mainFilename);
+		}
+		case IDNO:
+		{
+			return true;
+		}
+		case IDCANCEL:
+		{
+			return false;
+		}
+		default:
+		{
+			return false;
+		}
+	}
+}
+
+
 
 void YaPyN_Editor::createCell()
 {
@@ -462,6 +534,8 @@ void YaPyN_Editor::clearCells()
 	handlesAndCells.clear();
 }
 
+
+
 unsigned int YaPyN_Editor::getCountsOfStrings(HWND handleCell)
 {
 	CellWindow* cell = &*handlesAndCells.find(handleCell)->second;
@@ -491,6 +565,7 @@ unsigned int YaPyN_Editor::getCountsOfStrings(HWND handleCell)
 	return countOfN;
 }
 
+// TODO: заменить использование этой функции функцией CellWindow::getText()
 // Попытки вынести однотипный кусок получения текста из ячеек, вынеся его в функцию.
 wchar_t* YaPyN_Editor::getTextFromCell(HWND handleCell)
 {
@@ -500,71 +575,4 @@ wchar_t* YaPyN_Editor::getTextFromCell(HWND handleCell)
 	SendMessage(handleCell, WM_GETTEXT, length + 1, reinterpret_cast<LPARAM>(text));
 
 	return text;
-}
-
-LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	if( message == WM_NCCREATE ) {
-		YaPyN_Editor* window = reinterpret_cast<YaPyN_Editor*> ((reinterpret_cast<CREATESTRUCT*>(lParam))->lpCreateParams);
-		SetLastError(0);
-		SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG>(window));
-		if( GetLastError() ) {
-			return GetLastError();
-		}
-		window->OnNCCreate(hwnd);
-		return DefWindowProc(hwnd, message, wParam, lParam);
-	}
-
-	YaPyN_Editor* window = reinterpret_cast<YaPyN_Editor*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-	switch( message ) {
-		case WM_CREATE:
-		{
-			window->OnCreate();
-			return DefWindowProc(hwnd, message, wParam, lParam);
-		}
-		case WM_PAINT: 
-		{
-			window->OnPaint();
-			return DefWindowProc(hwnd, message, wParam, lParam);
-		}
-		case WM_SIZE:
-		{
-			window->OnSize();
-			return DefWindowProc(hwnd, message, wParam, lParam);
-		}
-		case WM_CLOSE:
-		{
-			if( window->OnClose() ) {
-				::PostQuitMessage(0);
-				return DefWindowProc(hwnd, message, wParam, lParam);
-			} else {
-				return 0;
-			}
-		}
-		case WM_COMMAND:
-		{
-			window->OnCommand(hwnd, message, wParam, lParam);
-			return DefWindowProc(hwnd, message, wParam, lParam);
-		}
-		case WM_DESTROY:
-		{
-			window->OnDestroy();
-			return SuccessDestroyWindowValue;
-		}
-		case WM_CTLCOLOREDIT:
-		{
-			HDC hdc = (HDC)wParam;
-			HBRUSH hbr = 0;
-			if (lParam == (long)GetFocus())
-			{
-				hbr = CreateSolidBrush(RGB(255, 255, 0));
-				SetBkColor(hdc, RGB(255, 255, 0));
-			}
-			return (LRESULT)hbr;
-		}
-		default:
-		{
-			return DefWindowProc(hwnd, message, wParam, lParam);
-		}
-	}
 }

@@ -25,8 +25,6 @@ protected:
 	void OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	void OnCellClick();
 
-	void createToolbar();
-
 private:
 
 	HWND handleMainWindow;
@@ -41,6 +39,8 @@ private:
 	bool changed;
 
 	std::vector<HBITMAP> buttonsBitmaps;
+
+	void createToolbar();
 
 	bool saveFile();
 	bool saveFile(std::string filename);
@@ -57,8 +57,6 @@ private:
 
 	unsigned int getCountsOfStrings(HWND handleCell);
 	wchar_t* getTextFromCell(HWND handleCell);
-
-	void addToolbarItem(INT_PTR idBitmap, INT_PTR idAction);
 
 	static LRESULT __stdcall windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
