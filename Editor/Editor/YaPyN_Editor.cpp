@@ -84,7 +84,7 @@ void YaPyN_Editor::OnPaint()
 	::BeginPaint(handleMainWindow, &paintStruct);
 
 	HBRUSH brush;
-	brush = CreateSolidBrush(RGB(100, 150, 200));
+	brush = CreateSolidBrush(RGB(200, 200, 200));
 	::FillRect(paintStruct.hdc, &paintStruct.rcPaint, brush);
 	::EndPaint(handleMainWindow, &paintStruct);
 
@@ -384,6 +384,7 @@ void YaPyN_Editor::createCell(std::wstring text)
 {
 	createCell();
 	::SetWindowText(activeCell->getHandle(), (LPWSTR)text.c_str());
+	resizeCell(activeCell->getHandle());
 	InvalidateRect(handleMainWindow, NULL, FALSE);
 }
 
