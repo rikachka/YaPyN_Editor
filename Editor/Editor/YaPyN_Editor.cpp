@@ -74,16 +74,16 @@ void YaPyN_Editor::OnCreate()
 	createCell();
 }
 
-void YaPyN_Editor::OnSize()
+void YaPyN_Editor::OnPaint()
 {
 	InvalidateRect(handleMainWindow, NULL, FALSE);
 	PAINTSTRUCT paintStruct;
-	BeginPaint(handleMainWindow, &paintStruct);
+	::BeginPaint(handleMainWindow, &paintStruct);
 
 	HBRUSH brush;
 	brush = CreateSolidBrush(RGB(100, 150, 200));
-	FillRect(paintStruct.hdc, &paintStruct.rcPaint, brush);
-	EndPaint(handleMainWindow, &paintStruct);
+	::FillRect(paintStruct.hdc, &paintStruct.rcPaint, brush);
+	::EndPaint(handleMainWindow, &paintStruct);
 
 	RECT rect;
 	::GetClientRect(handleMainWindow, &rect);
@@ -92,15 +92,73 @@ void YaPyN_Editor::OnSize()
 	::GetClientRect(handleToolbar, &toolbarRect);
 
 	int currentTop = rect.top + (toolbarRect.bottom - toolbarRect.top) + sizeBetweenCells;
-	for( auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window ) {
+	for (auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window) {
 		LONG leftBorder = rect.left + marginLeftRightCells;
 		LONG width = rect.right - rect.left - 2 * marginLeftRightCells;
-		
-		SetWindowPos(window->getHandle(), HWND_TOP, leftBorder, currentTop, width, window->getHeight(), 0);
+
+		::SetWindowPos(window->getHandle(), HWND_TOP, leftBorder, currentTop, width, window->getHeight(), 0);
 		currentTop += sizeBetweenCells + window->getHeight();
 	}
 
+	//PAINTSTRUCT paintStruct2;
+	//BeginPaint(activeCell->getHandle(), &paintStruct2);
+	//brush = CreateSolidBrush(RGB(0, 250, 0));
+	//FillRect(paintStruct2.hdc, &paintStruct2.rcPaint, brush);
+	//EndPaint(activeCell->getHandle(), &paintStruct2);
+}
+
+void YaPyN_Editor::OnSize()
+{
+	InvalidateRect(handleMainWindow, NULL, FALSE);
+
 	SendMessage(handleToolbar, TB_AUTOSIZE, 0, 0);
+
+	//RECT rect;
+	//::GetClientRect(handleMainWindow, &rect);
+
+	//RECT toolbarRect;
+	//::GetClientRect(handleToolbar, &toolbarRect);
+
+	//int currentTop = rect.top + (toolbarRect.bottom - toolbarRect.top) + sizeBetweenCells;
+	//for (auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window) {
+	//	LONG leftBorder = rect.left + marginLeftRightCells;
+	//	LONG width = rect.right - rect.left - 2 * marginLeftRightCells;
+
+	//	::SetWindowPos(window->getHandle(), HWND_TOP, leftBorder, currentTop, width, window->getHeight(), 0);
+	//	currentTop += sizeBetweenCells + window->getHeight();
+	//}
+
+	//InvalidateRect(handleMainWindow, NULL, FALSE);
+	//PAINTSTRUCT paintStruct;
+	//BeginPaint(handleMainWindow, &paintStruct);
+
+	//HBRUSH brush;
+	//brush = CreateSolidBrush(RGB(100, 150, 200));
+	//FillRect(paintStruct.hdc, &paintStruct.rcPaint, brush);
+	//EndPaint(handleMainWindow, &paintStruct);
+
+	//RECT rect;
+	//::GetClientRect(handleMainWindow, &rect);
+
+	//RECT toolbarRect;
+	//::GetClientRect(handleToolbar, &toolbarRect);
+
+	//int currentTop = rect.top + (toolbarRect.bottom - toolbarRect.top) + sizeBetweenCells;
+	//for( auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window ) {
+	//	LONG leftBorder = rect.left + marginLeftRightCells;
+	//	LONG width = rect.right - rect.left - 2 * marginLeftRightCells;
+	//	
+	//	SetWindowPos(window->getHandle(), HWND_TOP, leftBorder, currentTop, width, window->getHeight(), 0);
+	//	currentTop += sizeBetweenCells + window->getHeight();
+
+	//	PAINTSTRUCT paintStruct2;
+	//	BeginPaint(activeCell->getHandle(), &paintStruct2);
+	//	brush = CreateSolidBrush(RGB(0, 0, 200));
+	//	FillRect(paintStruct2.hdc, &paintStruct2.rcPaint, brush);
+	//	EndPaint(activeCell->getHandle(), &paintStruct2);
+	//}
+
+	//SendMessage(handleToolbar, TB_AUTOSIZE, 0, 0);
 }
 
 void YaPyN_Editor::OnDestroy()
@@ -110,24 +168,24 @@ void YaPyN_Editor::OnDestroy()
 
 bool YaPyN_Editor::OnClose()
 {
-	if( changed ) {
-		switch( MessageBox(handleMainWindow, L"Вы ввели текст. Сохранить?", L"Завершение работы", MB_YESNOCANCEL | MB_ICONWARNING ))
-		{
-			case IDYES:
-			{
-				return saveFile();
-			}
-			case IDNO:
-			{
-				return true;
-			}
-			case IDCANCEL:
-			{
-				return false;
-			}
-		}
-	} else {
-		//TODO: Вернуть позже. Мешается..
+	//TODO: Вернуть позже. Мешается..
+	//if( changed ) {
+	//	switch( MessageBox(handleMainWindow, L"Вы ввели текст. Сохранить?", L"Завершение работы", MB_YESNOCANCEL | MB_ICONWARNING ))
+	//	{
+	//		case IDYES:
+	//		{
+	//			return saveFile();
+	//		}
+	//		case IDNO:
+	//		{
+	//			return true;
+	//		}
+	//		case IDCANCEL:
+	//		{
+	//			return false;
+	//		}
+	//	}
+	//} else {
 		//switch( MessageBox(handleMainWindow, L"Вы действительно хотите выйти?", L"Завершение работы", MB_YESNO | MB_ICONWARNING )) {
 		//	case IDNO:
 		//	{
@@ -138,7 +196,7 @@ bool YaPyN_Editor::OnClose()
 		//		return true;
 		//	}
 		//}
-	}
+	//}
 	return true;
 }
 
@@ -201,20 +259,31 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			case EN_UPDATE:
 			{
 				resizeCell(reinterpret_cast<HWND>(lParam));
+				break;
+			}
+			case EN_SETFOCUS:
+			{
+				OnCellClick();
+				break;
 			}
 			// Здесь будет меню, но пока его нет.
 			// Здесь будет акселлератор, но пока его нет.
+			default:
+			{
+				break;
+			}
 		}
 	}
 }
 
-void YaPyN_Editor::OnLBottonUp()
+void YaPyN_Editor::OnCellClick()
 {
-	HWND handle = GetFocus();
+	HWND handle = ::GetFocus();
 	auto cell = handlesAndCells.find(handle);
 	if( cell != handlesAndCells.end() ) {
 		activeCell = cell->second;
 	}
+	InvalidateRect(handleMainWindow, NULL, FALSE);
 }
 
 void YaPyN_Editor::createToolbar() {
@@ -336,6 +405,8 @@ void YaPyN_Editor::resizeCell(HWND handleCell)
 	if( activeCell->changeHeight(getCountsOfStrings(handleCell)) ) {
 		SendMessage(handleMainWindow, WM_SIZE, 0, 0);
 	}
+
+	//SendMessage(handleMainWindow, WM_SIZE, 0, 0);
 }
 
 unsigned int YaPyN_Editor::getCountsOfStrings(HWND handleCell)
@@ -398,6 +469,11 @@ LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 			window->OnCreate();
 			return DefWindowProc(hwnd, message, wParam, lParam);
 		}
+		case WM_PAINT: 
+		{
+			window->OnPaint();
+			return DefWindowProc(hwnd, message, wParam, lParam);
+		}
 		case WM_SIZE:
 		{
 			window->OnSize();
@@ -417,15 +493,21 @@ LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 			window->OnCommand(hwnd, message, wParam, lParam);
 			return DefWindowProc(hwnd, message, wParam, lParam);
 		}
-		case WM_LBUTTONUP:
-		{
-			window->OnLBottonUp();
-			return DefWindowProc(hwnd, message, wParam, lParam);
-		}
 		case WM_DESTROY:
 		{
 			window->OnDestroy();
 			return SuccessDestroyWindowValue;
+		}
+		case WM_CTLCOLOREDIT:
+		{
+			HDC hdc = (HDC)wParam;
+			HBRUSH hbr = 0;
+			if (lParam == (long)GetFocus())
+			{
+				hbr = CreateSolidBrush(RGB(255, 255, 0));
+				SetBkColor(hdc, RGB(255, 255, 0));
+			}
+			return (LRESULT)hbr;
 		}
 		default:
 		{

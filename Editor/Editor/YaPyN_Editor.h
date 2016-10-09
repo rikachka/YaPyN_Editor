@@ -18,11 +18,12 @@ protected:
 
 	void OnNCCreate(HWND hwnd);
 	void OnCreate();
+	void OnPaint();
 	void OnSize();
 	void OnDestroy();
 	bool OnClose();
 	void OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	void OnLBottonUp();
+	void OnCellClick();
 
 	void createToolbar();
 

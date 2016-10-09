@@ -22,8 +22,8 @@ void CellWindow::Create(HWND parentHandle)
 	handleCellWindow = CreateWindowEx(0,
 		L"EDIT",
 		0,
-		WS_CHILD | WS_VISIBLE | ES_LEFT | ES_MULTILINE //| ES_AUTOHSCROLL
-													   | WS_HSCROLL,
+		WS_CHILD | WS_VISIBLE | ES_LEFT | ES_MULTILINE | WS_BORDER //| ES_AUTOHSCROLL
+																	| WS_HSCROLL,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
