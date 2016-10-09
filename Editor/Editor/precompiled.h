@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include <fstream>
 
 
 #include "CommCtrl.h"

@@ -43,6 +43,7 @@ private:
 	std::vector<HBITMAP> buttonsBitmaps;
 
 	bool saveFile();
+	bool saveFile(std::string filename);
 	void loadFile(std::string pathToFile);
 
 	void createCell();

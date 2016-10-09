@@ -110,56 +110,7 @@ void YaPyN_Editor::OnPaint()
 
 void YaPyN_Editor::OnSize()
 {
-	InvalidateRect(handleMainWindow, NULL, FALSE);
-
 	SendMessage(handleToolbar, TB_AUTOSIZE, 0, 0);
-
-	//RECT rect;
-	//::GetClientRect(handleMainWindow, &rect);
-
-	//RECT toolbarRect;
-	//::GetClientRect(handleToolbar, &toolbarRect);
-
-	//int currentTop = rect.top + (toolbarRect.bottom - toolbarRect.top) + sizeBetweenCells;
-	//for (auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window) {
-	//	LONG leftBorder = rect.left + marginLeftRightCells;
-	//	LONG width = rect.right - rect.left - 2 * marginLeftRightCells;
-
-	//	::SetWindowPos(window->getHandle(), HWND_TOP, leftBorder, currentTop, width, window->getHeight(), 0);
-	//	currentTop += sizeBetweenCells + window->getHeight();
-	//}
-
-	//InvalidateRect(handleMainWindow, NULL, FALSE);
-	//PAINTSTRUCT paintStruct;
-	//BeginPaint(handleMainWindow, &paintStruct);
-
-	//HBRUSH brush;
-	//brush = CreateSolidBrush(RGB(100, 150, 200));
-	//FillRect(paintStruct.hdc, &paintStruct.rcPaint, brush);
-	//EndPaint(handleMainWindow, &paintStruct);
-
-	//RECT rect;
-	//::GetClientRect(handleMainWindow, &rect);
-
-	//RECT toolbarRect;
-	//::GetClientRect(handleToolbar, &toolbarRect);
-
-	//int currentTop = rect.top + (toolbarRect.bottom - toolbarRect.top) + sizeBetweenCells;
-	//for( auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window ) {
-	//	LONG leftBorder = rect.left + marginLeftRightCells;
-	//	LONG width = rect.right - rect.left - 2 * marginLeftRightCells;
-	//	
-	//	SetWindowPos(window->getHandle(), HWND_TOP, leftBorder, currentTop, width, window->getHeight(), 0);
-	//	currentTop += sizeBetweenCells + window->getHeight();
-
-	//	PAINTSTRUCT paintStruct2;
-	//	BeginPaint(activeCell->getHandle(), &paintStruct2);
-	//	brush = CreateSolidBrush(RGB(0, 0, 200));
-	//	FillRect(paintStruct2.hdc, &paintStruct2.rcPaint, brush);
-	//	EndPaint(activeCell->getHandle(), &paintStruct2);
-	//}
-
-	//SendMessage(handleToolbar, TB_AUTOSIZE, 0, 0);
 }
 
 void YaPyN_Editor::OnDestroy()
@@ -212,7 +163,7 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			}
 			case ID_FILE_SAVE:
 			{
-				if( saveFile() ) {
+				if( saveFile(filePathToLoad) ) {
 					changed = false;
 				}
 				break;
@@ -327,6 +278,29 @@ void YaPyN_Editor::createToolbar() {
 }
 
 
+bool YaPyN_Editor::saveFile(std::string filename)
+{
+	//TODO: поддержка русского текста
+	std::ofstream fout;
+	fout.open(filename);
+	for (auto it = childrensWindow.begin(); it != childrensWindow.end(); ++it) {
+		int length = SendMessage(it->getHandle(), WM_GETTEXTLENGTH, 0, 0);
+		length++;
+		wchar_t* text = new wchar_t[length];
+		::GetWindowText(it->getHandle(), (LPWSTR)text, length);
+		fout << "{";
+		for (int i = 0; i < length; i++) 
+		{
+			fout << static_cast<char>(text[i]);
+		}
+		fout << "}\n";
+		delete(text);
+	}
+	fout.close();
+	return true;
+}
+
+
 // Работает, но неккоректно. Необходимо исправить.
 bool YaPyN_Editor::saveFile()
 {
@@ -343,7 +317,7 @@ bool YaPyN_Editor::saveFile()
 		HANDLE handleFile = CreateFile(file, GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 		for( auto it = childrensWindow.begin(); it != childrensWindow.end(); ++it ) {
 
-			// wchar_t* text = getTextFromCell(it->getHandle());
+			//wchar_t* text = getTextFromCell(it->getHandle());
 			
 			int length = SendMessage(it->getHandle(), WM_GETTEXTLENGTH, 0, 0);
 			std::shared_ptr<wchar_t> text_ptr(new wchar_t[length + 1]);
