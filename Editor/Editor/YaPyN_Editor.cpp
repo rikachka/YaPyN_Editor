@@ -5,6 +5,9 @@
 // Временные путь для сохранения/загрузки.
 const std::string mainFilename = "file.txt";
 
+const wchar_t* textForExit = L"Завершение работы";
+const wchar_t* textForNewFile = L"Действие со старым файлом";
+
 const int YaPyN_Editor::sizeBetweenCells = 10;
 const int YaPyN_Editor::marginLeftRightCells = 10;
 const int maxSizeForFileName = 64;
@@ -124,7 +127,7 @@ void YaPyN_Editor::OnDestroy()
 bool YaPyN_Editor::OnClose()
 {
 	if( changed ) {
-		askToSave();
+		askToSave(textForExit);
 	}
 	else {
 		switch( MessageBox(handleMainWindow, L"Вы действительно хотите выйти?", L"Завершение работы", MB_YESNO | MB_ICONWARNING) ) {
@@ -148,8 +151,9 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			case ID_FILE_NEW:
 			{
 				if( changed ) {
-					if( !askToSave() )
+					if( !askToSave(textForNewFile) ) {
 						break;
+					}
 				}
 				clearCells();
 				createCell();
@@ -170,8 +174,9 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			case ID_FILE_OPEN:
 			{
 				if( changed ) {
-					if( !askToSave() )
+					if( !askToSave(textForNewFile) ) {
 						break;
+					}
 				}
 				loadFile(mainFilename);
 				break;
@@ -422,9 +427,10 @@ void YaPyN_Editor::loadFile(std::string filename)
 	InvalidateRect(handleMainWindow, NULL, FALSE);
 }
 
-bool YaPyN_Editor::askToSave()
+bool YaPyN_Editor::askToSave(const wchar_t* text)
 {
-	switch( MessageBox(handleMainWindow, L"Вы ввели текст. Сохранить?", L"Завершение работы", MB_YESNOCANCEL | MB_ICONWARNING) )
+	LPCWSTR textLPCWSTR = reinterpret_cast<LPCWSTR>((const_cast<wchar_t*>(text)));
+	switch( MessageBox(handleMainWindow, L"Вы ввели текст. Сохранить?", textLPCWSTR, MB_YESNOCANCEL | MB_ICONWARNING) )
 	{
 		case IDYES:
 		{
@@ -521,15 +527,14 @@ void YaPyN_Editor::resizeCell(HWND handleCell)
 
 void YaPyN_Editor::clearCells()
 {
-	for (auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window) {
-		DestroyWindow(window->getHandle());
+	unsigned int countOfCells = childrensWindow.size();
+	for( unsigned int i = 0; i < countOfCells; ++i ) {
+		deleteCell();
 	}
-	childrensWindow.clear();
 	activeCell = childrensWindow.end();
+	childrensWindow.clear();
 	handlesAndCells.clear();
 }
-
-
 
 unsigned int YaPyN_Editor::getCountsOfStrings(HWND handleCell)
 {

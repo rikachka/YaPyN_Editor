@@ -47,7 +47,7 @@ private:
 	bool saveFile();
 	bool saveFile(std::string filename);
 	void loadFile(std::string filename);
-	bool askToSave();
+	bool askToSave(const wchar_t* text);
 
 	void createCell();
 	void createCell(std::wstring text);
