@@ -484,6 +484,7 @@ void YaPyN_Editor::deleteCell()
 		childrensWindow.erase(oldCell);
 		handlesAndCells.erase(handlesAndCells.find(hwnd));
 		SendMessage(handleMainWindow, WM_SIZE, 0, 0);
+		SetFocus(activeCell->getHandle());
 	} else {
 		MessageBox(handleMainWindow, L"Выберите ячейку!", L"Не выбрана ячейка", MB_OK | MB_ICONWARNING);
 	}
