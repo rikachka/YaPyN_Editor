@@ -2,9 +2,6 @@
 
 #include "YaPyN_Editor.h"
 
-// Временные путь для сохранения/загрузки.
-const std::string mainFilename = "file.txt";
-
 const wchar_t* textForExit = L"Завершение работы";
 const wchar_t* textForNewFile = L"Действие со старым файлом";
 
@@ -12,8 +9,8 @@ const int YaPyN_Editor::sizeBetweenCells = 10;
 const int YaPyN_Editor::marginLeftRightCells = 10;
 const int maxSizeForFileName = 64;
 
-const char CELL_BEGIN_SYMBOL = '{';
-const char CELL_END_SYMBOL = '}';
+const char cellBeginSymbol = '{';
+const char cellEndSymbol = '}';
 
 YaPyN_Editor::YaPyN_Editor()
 {
@@ -74,10 +71,6 @@ void YaPyN_Editor::OnNCCreate(HWND hwnd)
 void YaPyN_Editor::OnCreate()
 {
 	createCell();
-	createCell();
-	createCell();
-	createCell();
-	createCell();
 }
 
 void YaPyN_Editor::OnPaint()
@@ -128,8 +121,7 @@ bool YaPyN_Editor::OnClose()
 {
 	if( changed ) {
 		askToSave(textForExit);
-	}
-	else {
+	} else {
 		switch( MessageBox(handleMainWindow, L"Вы действительно хотите выйти?", L"Завершение работы", MB_YESNO | MB_ICONWARNING) ) {
 			case IDNO:
 			{
@@ -166,7 +158,7 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			}
 			case ID_FILE_SAVE:
 			{
-				if( saveFile(mainFilename) ) {
+				if( saveFile() ) {
 					changed = false;
 				}
 				break;
@@ -178,7 +170,7 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 						break;
 					}
 				}
-				loadFile(mainFilename);
+				loadFile();
 				break;
 			}
 			case ID_CELL_ADD:
@@ -354,22 +346,6 @@ void YaPyN_Editor::createToolbar() {
 	SendMessage(handleToolbar, (UINT)TB_ADDBUTTONS, _countof(tbb), (LPARAM)&tbb);
 }
 
-
-
-bool YaPyN_Editor::saveFile(std::string filename)
-{
-	std::wofstream fout;
-	fout.open(filename);
-	for( auto it = childrensWindow.begin(); it != childrensWindow.end(); ++it ) {
-		std::wstring text = it->getText();
-		fout << CELL_BEGIN_SYMBOL << text << CELL_END_SYMBOL << std::endl;
-	}
-	fout.close();
-	return true;
-}
-
-//TODO: Внутрь нужно вставить функцию saveFile(std::string filename)
-// Работает, но неккоректно. Необходимо исправить. 
 bool YaPyN_Editor::saveFile()
 {
 	wchar_t file[maxSizeForFileName];
@@ -382,49 +358,54 @@ bool YaPyN_Editor::saveFile()
 
 	bool result;
 	if( result = GetSaveFileName(&openFileName) ) {
-		HANDLE handleFile = CreateFile(file, GENERIC_WRITE, FILE_SHARE_READ, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
-		for( auto it = childrensWindow.begin(); it != childrensWindow.end(); ++it ) {
 
-			//wchar_t* text = getTextFromCell(it->getHandle());
-			
-			int length = SendMessage(it->getHandle(), WM_GETTEXTLENGTH, 0, 0);
-			std::shared_ptr<wchar_t> text_ptr(new wchar_t[length + 1]);
-			wchar_t* text = text_ptr.get();
-			SendMessage(it->getHandle(), WM_GETTEXT, length + 1, reinterpret_cast<LPARAM>(text));	
-			
-			WriteFile(handleFile, "{\n", 2 * sizeof(wchar_t), 0, 0);
-			WriteFile(handleFile, text, wcslen(text) * sizeof(wchar_t), 0, 0);
-			WriteFile(handleFile, "\n}", 2 * sizeof(wchar_t), 0, 0);
+		std::wofstream fout;
+		fout.open(file);
+
+		for( auto it = childrensWindow.begin(); it != childrensWindow.end(); ++it ) {
+			std::wstring text = it->getText();
+			fout << cellBeginSymbol << text << cellEndSymbol << std::endl;
 		}
-		CloseHandle(handleFile);
+		fout.close();
 	}
 	return result;
 }
 
-void YaPyN_Editor::loadFile(std::string filename)
+bool YaPyN_Editor::loadFile()
 {
 	clearCells();
 
-	std::ifstream fin;
-	fin.open(filename);
-	if( !fin ) 
-	{
-		MessageBox(handleMainWindow, L"Выберите другой файл!", L"Нет такого файла!", MB_OK | MB_ICONWARNING);
-		fin.close();
-		return;
-	}
-	while( !fin.eof() ) {
-		std::string text;
-		getline(fin, text, CELL_END_SYMBOL);
-		int text_begin = text.find(CELL_BEGIN_SYMBOL);
-		if( text_begin != -1 ) {
-			text = text.substr(text_begin + 1);
-			std::wstring wtext(text.begin(), text.end());
-			createCell(wtext);
+	wchar_t file[maxSizeForFileName];
+	OPENFILENAME openFileName = {};
+	openFileName.lStructSize = sizeof(OPENFILENAME);
+	openFileName.lpstrFile = file;
+	openFileName.hwndOwner = handleMainWindow;
+	openFileName.lpstrFile[0] = '\0';
+	openFileName.nMaxFile = sizeof(file);
+
+	bool result;
+	if( result = GetOpenFileName(&openFileName) ) {
+		std::ifstream fin;
+		fin.open(file);
+		if( !fin ) {
+			MessageBox(handleMainWindow, L"Выберите другой файл!", L"Нет такого файла!", MB_OK | MB_ICONWARNING);
+			fin.close();
+			return false;
 		}
+		while( !fin.eof() ) {
+			std::string text;
+			getline(fin, text, cellEndSymbol);
+			int text_begin = text.find(cellBeginSymbol);
+			if (text_begin != -1) {
+				text = text.substr(text_begin + 1);
+				std::wstring wtext(text.begin(), text.end());
+				createCell(wtext);
+			}
+		}
+		fin.close();
+		InvalidateRect(handleMainWindow, NULL, FALSE);
 	}
-	fin.close();
-	InvalidateRect(handleMainWindow, NULL, FALSE);
+	return result;
 }
 
 bool YaPyN_Editor::askToSave(const wchar_t* text)
@@ -434,7 +415,7 @@ bool YaPyN_Editor::askToSave(const wchar_t* text)
 	{
 		case IDYES:
 		{
-			return saveFile(mainFilename);
+			return saveFile();
 		}
 		case IDNO:
 		{
@@ -484,14 +465,16 @@ void YaPyN_Editor::deleteCell()
 		childrensWindow.erase(oldCell);
 		handlesAndCells.erase(handlesAndCells.find(hwnd));
 		SendMessage(handleMainWindow, WM_SIZE, 0, 0);
-		SetFocus(activeCell->getHandle());
+		if( activeCell != childrensWindow.end() ) {
+			SetFocus(activeCell->getHandle());
+		}
 	} else {
 		MessageBox(handleMainWindow, L"Выберите ячейку!", L"Не выбрана ячейка", MB_OK | MB_ICONWARNING);
 	}
 	InvalidateRect(handleMainWindow, NULL, FALSE);
 }
 
-// dirct == true, если вверх, false - иначе
+// direct == true, если вверх, false - иначе
 void YaPyN_Editor::moveCell(bool direct)
 {
 	auto dangerousCell = activeCell;

@@ -45,8 +45,7 @@ private:
 	void createToolbar();
 
 	bool saveFile();
-	bool saveFile(std::string filename);
-	void loadFile(std::string filename);
+	bool loadFile();
 	bool askToSave(const wchar_t* text);
 
 	void createCell();
