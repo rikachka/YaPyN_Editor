@@ -52,6 +52,8 @@ private:
 	void deleteCell();
 	void moveUpCell();
 	void moveDownCell();
+	void runCell();
+
 	void resizeCell(HWND handleCell);
 	void clearCells();
 
