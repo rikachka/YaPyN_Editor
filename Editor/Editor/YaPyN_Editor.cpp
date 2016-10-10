@@ -95,7 +95,7 @@ void YaPyN_Editor::OnPaint()
 	::GetClientRect(handleToolbar, &toolbarRect);
 
 	int currentTop = rect.top + (toolbarRect.bottom - toolbarRect.top) + sizeBetweenCells;
-	for (auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window) {
+	for( auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window ) {
 		LONG leftBorder = rect.left + marginLeftRightCells;
 		LONG width = rect.right - rect.left - 2 * marginLeftRightCells;
 
@@ -116,16 +116,6 @@ void YaPyN_Editor::OnSize()
 	SendMessage(handleToolbar, TB_AUTOSIZE, 0, 0);
 }
 
-void YaPyN_Editor::OnCellClick()
-{
-	HWND handle = ::GetFocus();
-	auto cell = handlesAndCells.find(handle);
-	if (cell != handlesAndCells.end()) {
-		activeCell = cell->second;
-	}
-	InvalidateRect(handleMainWindow, NULL, FALSE);
-}
-
 void YaPyN_Editor::OnDestroy()
 {
 	PostQuitMessage(SuccessDestroyWindowValue);
@@ -135,8 +125,9 @@ bool YaPyN_Editor::OnClose()
 {
 	if( changed ) {
 		askToSave();
-	} else {
-		switch( MessageBox(handleMainWindow, L"Вы действительно хотите выйти?", L"Завершение работы", MB_YESNO | MB_ICONWARNING )) {
+	}
+	else {
+		switch( MessageBox(handleMainWindow, L"Вы действительно хотите выйти?", L"Завершение работы", MB_YESNO | MB_ICONWARNING) ) {
 			case IDNO:
 			{
 				return false;
@@ -150,16 +141,14 @@ bool YaPyN_Editor::OnClose()
 	return true;
 }
 
-
-
 void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if( HIWORD(wParam) == 0 ) {
 		switch( LOWORD(wParam) ) {
 			case ID_FILE_NEW:
 			{
-				if (changed) {
-					if (!askToSave())
+				if( changed ) {
+					if( !askToSave() )
 						break;
 				}
 				clearCells();
@@ -180,8 +169,8 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			}
 			case ID_FILE_OPEN:
 			{
-				if (changed) {
-					if (!askToSave())
+				if( changed ) {
+					if( !askToSave() )
 						break;
 				}
 				loadFile(mainFilename);
@@ -202,12 +191,12 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 			}
 			case ID_CELL_UP:
 			{
-				moveUpCell();
+				moveCell(true);
 				break;
 			}
 			case ID_CELL_DOWN:
 			{
-				moveDownCell();
+				moveCell(false);
 				break;
 			}
 			default:
@@ -240,13 +229,34 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	}
 }
 
+void YaPyN_Editor::OnCellClick()
+{
+	HWND handle = ::GetFocus();
+	auto cell = handlesAndCells.find(handle);
+	if( cell != handlesAndCells.end() ) {
+		activeCell = cell->second;
+	}
+	InvalidateRect(handleMainWindow, NULL, FALSE);
+}
+
+LRESULT YaPyN_Editor::OnCtlColorEdit(WPARAM wParam, LPARAM lParam)
+{
+	HDC hdc = reinterpret_cast<HDC>(wParam);
+	HBRUSH hbr = 0;
+	if( lParam == reinterpret_cast<long>(GetFocus()) ) {
+		hbr = CreateSolidBrush(RGB(255, 255, 0));
+		SetBkColor(hdc, RGB(255, 255, 0));
+	}
+	return reinterpret_cast<LRESULT>(hbr);
+}
+
 LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	if (message == WM_NCCREATE) {
+	if( message == WM_NCCREATE ) {
 		YaPyN_Editor* window = reinterpret_cast<YaPyN_Editor*> ((reinterpret_cast<CREATESTRUCT*>(lParam))->lpCreateParams);
 		SetLastError(0);
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG>(window));
-		if (GetLastError()) {
+		if( GetLastError() ) {
 			return GetLastError();
 		}
 		window->OnNCCreate(hwnd);
@@ -254,7 +264,7 @@ LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 	}
 
 	YaPyN_Editor* window = reinterpret_cast<YaPyN_Editor*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-	switch (message) {
+	switch( message ) {
 		case WM_CREATE:
 		{
 			window->OnCreate();
@@ -272,11 +282,10 @@ LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 		}
 		case WM_CLOSE:
 		{
-			if (window->OnClose()) {
+			if( window->OnClose() ) {
 				::PostQuitMessage(0);
 				return DefWindowProc(hwnd, message, wParam, lParam);
-			}
-			else {
+			} else {
 				return 0;
 			}
 		}
@@ -292,14 +301,7 @@ LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 		}
 		case WM_CTLCOLOREDIT:
 		{
-			HDC hdc = (HDC)wParam;
-			HBRUSH hbr = 0;
-			if (lParam == (long)GetFocus())
-			{
-				hbr = CreateSolidBrush(RGB(255, 255, 0));
-				SetBkColor(hdc, RGB(255, 255, 0));
-			}
-			return (LRESULT)hbr;
+			return window->OnCtlColorEdit(wParam, lParam);
 		}
 		default:
 		{
@@ -307,8 +309,6 @@ LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM 
 		}
 	}
 }
-
-
 
 void YaPyN_Editor::createToolbar() {
 
@@ -355,7 +355,7 @@ bool YaPyN_Editor::saveFile(std::string filename)
 {
 	std::wofstream fout;
 	fout.open(filename);
-	for (auto it = childrensWindow.begin(); it != childrensWindow.end(); ++it) {
+	for( auto it = childrensWindow.begin(); it != childrensWindow.end(); ++it ) {
 		std::wstring text = it->getText();
 		fout << CELL_BEGIN_SYMBOL << text << CELL_END_SYMBOL << std::endl;
 	}
@@ -402,18 +402,17 @@ void YaPyN_Editor::loadFile(std::string filename)
 
 	std::ifstream fin;
 	fin.open(filename);
-	if (!fin) 
+	if( !fin ) 
 	{
-		MessageBox(handleMainWindow, L"Выберите другой файл!", L"Нет такого файла", MB_OK | MB_ICONWARNING);
+		MessageBox(handleMainWindow, L"Выберите другой файл!", L"Нет такого файла!", MB_OK | MB_ICONWARNING);
 		fin.close();
 		return;
 	}
-	while (!fin.eof()) {
+	while( !fin.eof() ) {
 		std::string text;
 		getline(fin, text, CELL_END_SYMBOL);
 		int text_begin = text.find(CELL_BEGIN_SYMBOL);
-		if (text_begin != -1) 
-		{
+		if( text_begin != -1 ) {
 			text = text.substr(text_begin + 1);
 			std::wstring wtext(text.begin(), text.end());
 			createCell(wtext);
@@ -425,7 +424,7 @@ void YaPyN_Editor::loadFile(std::string filename)
 
 bool YaPyN_Editor::askToSave()
 {
-	switch (MessageBox(handleMainWindow, L"Вы ввели текст. Сохранить?", L"Завершение работы", MB_YESNOCANCEL | MB_ICONWARNING))
+	switch( MessageBox(handleMainWindow, L"Вы ввели текст. Сохранить?", L"Завершение работы", MB_YESNOCANCEL | MB_ICONWARNING) )
 	{
 		case IDYES:
 		{
@@ -445,8 +444,6 @@ bool YaPyN_Editor::askToSave()
 		}
 	}
 }
-
-
 
 void YaPyN_Editor::createCell()
 {
@@ -487,25 +484,24 @@ void YaPyN_Editor::deleteCell()
 	InvalidateRect(handleMainWindow, NULL, FALSE);
 }
 
-void YaPyN_Editor::moveUpCell() 
+// dirct == true, если вверх, false - иначе
+void YaPyN_Editor::moveCell(bool direct)
 {
-	if (activeCell != childrensWindow.begin())
-	{
-		auto prevCell = activeCell;
-		activeCell = --activeCell;
-		std::swap(*activeCell, *prevCell);
-		handlesAndCells[activeCell->getHandle()] = activeCell;
-		handlesAndCells[prevCell->getHandle()] = prevCell;
-		InvalidateRect(handleMainWindow, NULL, FALSE);
+	auto dangerousCell = activeCell;
+	if( direct ) {
+		dangerousCell = childrensWindow.begin();
+	} else {
+		dangerousCell = childrensWindow.end();
+		--dangerousCell;
 	}
-}
-
-void YaPyN_Editor::moveDownCell() 
-{
-	if (activeCell != --childrensWindow.end())
+	if( activeCell != dangerousCell )
 	{
 		auto prevCell = activeCell;
-		activeCell = ++activeCell;
+		if( direct ) {
+			--activeCell;
+		} else {
+			++activeCell;
+		}
 		std::swap(*activeCell, *prevCell);
 		handlesAndCells[activeCell->getHandle()] = activeCell;
 		handlesAndCells[prevCell->getHandle()] = prevCell;
@@ -525,8 +521,7 @@ void YaPyN_Editor::resizeCell(HWND handleCell)
 
 void YaPyN_Editor::clearCells()
 {
-	for (auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window)
-	{
+	for (auto window = childrensWindow.begin(); window != childrensWindow.end(); ++window) {
 		DestroyWindow(window->getHandle());
 	}
 	childrensWindow.clear();

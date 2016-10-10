@@ -6,6 +6,7 @@
 class YaPyN_Editor
 {
 public:
+
 	YaPyN_Editor();
 
 	static bool RegisterClass();
@@ -24,6 +25,7 @@ protected:
 	bool OnClose();
 	void OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	void OnCellClick();
+	LRESULT OnCtlColorEdit(WPARAM wParam, LPARAM lParam);
 
 private:
 
@@ -50,8 +52,7 @@ private:
 	void createCell();
 	void createCell(std::wstring text);
 	void deleteCell();
-	void moveUpCell();
-	void moveDownCell();
+	void moveCell(bool direct);
 	void resizeCell(HWND handleCell);
 	void clearCells();
 
