@@ -201,11 +201,6 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 				runCell();
 				break;
 			}
-			case ID_CELL_RUN:
-			{
-				runCell();
-				break;
-			}
 			default:
 			{
 				break;
@@ -511,16 +506,6 @@ void YaPyN_Editor::moveCell(bool direct)
 	}
 }
 
-void YaPyN_Editor::runCell()
-{
-
-}
-
-void YaPyN_Editor::runCell()
-{
-
-}
-
 void YaPyN_Editor::resizeCell(HWND handleCell)
 {
 	activeCell = handlesAndCells.find(handleCell)->second;
@@ -540,6 +525,11 @@ void YaPyN_Editor::clearCells()
 	activeCell = childrensWindow.end();
 	childrensWindow.clear();
 	handlesAndCells.clear();
+}
+
+void YaPyN_Editor::runCell()
+{
+
 }
 
 unsigned int YaPyN_Editor::getCountsOfStrings(HWND handleCell)
