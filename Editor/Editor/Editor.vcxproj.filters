@@ -78,6 +78,9 @@
     <Image Include="icons\up.bmp">
       <Filter>Файлы ресурсов</Filter>
     </Image>
+    <Image Include="icons\run.bmp">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="Icons\delete.svg">

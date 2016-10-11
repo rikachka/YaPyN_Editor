@@ -52,6 +52,7 @@ private:
 	void createCell(std::wstring text);
 	void deleteCell();
 	void moveCell(bool direct);
+	void runCell();
 	void resizeCell(HWND handleCell);
 	void clearCells();
 

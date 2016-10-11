@@ -196,6 +196,11 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 				moveCell(false);
 				break;
 			}
+			case ID_CELL_RUN:
+			{
+				runCell();
+				break;
+			}
 			default:
 			{
 				break;
@@ -333,6 +338,7 @@ void YaPyN_Editor::createToolbar() {
 	ImageList_Add(hImageList, LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_DELETE)), NULL);
 	ImageList_Add(hImageList, LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_UP)), NULL);
 	ImageList_Add(hImageList, LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_DOWN)), NULL);
+	ImageList_Add(hImageList, LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_RUN)), NULL);
 	SendMessage(handleToolbar, TB_SETIMAGELIST, (WPARAM)1, (LPARAM)hImageList);
 
 	TBBUTTON tbb[] =
@@ -341,6 +347,7 @@ void YaPyN_Editor::createToolbar() {
 		{ MAKELONG(1, 1), ID_CELL_DELETE, TBSTATE_ENABLED, TBSTYLE_BUTTON },
 		{ MAKELONG(2, 1), ID_CELL_UP, TBSTATE_ENABLED, TBSTYLE_BUTTON },
 		{ MAKELONG(3, 1), ID_CELL_DOWN, TBSTATE_ENABLED, TBSTYLE_BUTTON },
+		{ MAKELONG(4, 1), ID_CELL_RUN, TBSTATE_ENABLED, TBSTYLE_BUTTON },
 	};
 
 	SendMessage(handleToolbar, (UINT)TB_ADDBUTTONS, _countof(tbb), (LPARAM)&tbb);
@@ -497,6 +504,11 @@ void YaPyN_Editor::moveCell(bool direct)
 		handlesAndCells[prevCell->getHandle()] = prevCell;
 		InvalidateRect(handleMainWindow, NULL, FALSE);
 	}
+}
+
+void YaPyN_Editor::runCell()
+{
+
 }
 
 void YaPyN_Editor::resizeCell(HWND handleCell)
