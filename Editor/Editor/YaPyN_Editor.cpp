@@ -201,6 +201,11 @@ void YaPyN_Editor::OnCommand(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 				runCell();
 				break;
 			}
+			case ID_CELL_RUN:
+			{
+				runCell();
+				break;
+			}
 			default:
 			{
 				break;
@@ -504,6 +509,11 @@ void YaPyN_Editor::moveCell(bool direct)
 		handlesAndCells[prevCell->getHandle()] = prevCell;
 		InvalidateRect(handleMainWindow, NULL, FALSE);
 	}
+}
+
+void YaPyN_Editor::runCell()
+{
+
 }
 
 void YaPyN_Editor::runCell()
