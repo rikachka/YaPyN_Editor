@@ -14,6 +14,8 @@ const int maxSizeForFileName = 64;
 const char cellBeginSymbol = '{';
 const char cellEndSymbol = '}';
 
+const COLORREF colorActiveCell = RGB(200, 200, 200);
+
 YaPyN_Editor::YaPyN_Editor()
 {
 	handleMainWindow = 0;
@@ -83,7 +85,7 @@ void YaPyN_Editor::OnPaint()
 	::BeginPaint(handleMainWindow, &paintStruct);
 
 	HBRUSH brush;
-	brush = CreateSolidBrush(RGB(200, 200, 200));
+	brush = CreateSolidBrush(colorActiveCell);
 	::FillRect(paintStruct.hdc, &paintStruct.rcPaint, brush);
 	::EndPaint(handleMainWindow, &paintStruct);
 
