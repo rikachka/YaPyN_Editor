@@ -16,7 +16,7 @@ public:
 	unsigned int getHeight() const;
 	bool changeHeight(unsigned int countOfStrings);
 
-	std::wstring getText();
+	std::wstring getText() const;
 	
 	friend bool operator== (const CellWindow& left, const CellWindow& right);
 

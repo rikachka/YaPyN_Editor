@@ -1,25 +1,16 @@
 ﻿#include "CellWindow.h"
 
 // Временный размер окна текста.
-const int MAGIC_NUMBER = 34;
+const int temporarySize = 34;
 // Временный размер одной строчки.
 const int heightOfString = 16;
 // Временный размер одного символа.
 const long widthOfSymbol = 10;
 
-
-
-bool operator== (const CellWindow& left, const CellWindow& right)
-{
-	return left.getHandle() == right.getHandle();
-}
-
-
-
 CellWindow::CellWindow()
 {
 	handleCellWindow = 0;
-	height = MAGIC_NUMBER;
+	height = temporarySize;
 	countOfStrings = 0;
 }
 
@@ -56,17 +47,6 @@ void CellWindow::Show(int cmdShow)
 	ShowWindow(handleCellWindow, cmdShow);
 }
 
-void CellWindow::init()
-{
-	HMODULE module = ::GetModuleHandle(0);
-	HRSRC resourseHandle = ::FindResource(module, MAKEINTRESOURCE(IDR_TEXT1), L"TEXT");
-	HGLOBAL handleData = ::LoadResource(module, resourseHandle);
-	DWORD size = ::SizeofResource(module, resourseHandle);
-	LPVOID data = LockResource(handleData);
-	SetWindowText(handleCellWindow, reinterpret_cast<LPCWSTR>(data));
-}
-
-
 
 HWND CellWindow::getHandle() const
 {
@@ -82,12 +62,12 @@ bool CellWindow::changeHeight(unsigned int newCountOfStrings)
 {
 	bool changed = (countOfStrings != newCountOfStrings);
 	countOfStrings = newCountOfStrings;
-	height = MAGIC_NUMBER + countOfStrings * heightOfString;
+	height = temporarySize + countOfStrings * heightOfString;
 	// Поправить
 	return changed;
 }
 
-std::wstring CellWindow::getText()
+std::wstring CellWindow::getText() const
 {
 	int length = SendMessage(handleCellWindow, WM_GETTEXTLENGTH, 0, 0);
 	length++;
@@ -95,4 +75,19 @@ std::wstring CellWindow::getText()
 	text.resize(length);
 	::GetWindowText(handleCellWindow, (LPWSTR)text.c_str(), length);
 	return text;
+}
+
+bool operator== (const CellWindow& left, const CellWindow& right)
+{
+	return left.getHandle() == right.getHandle();
+}
+
+void CellWindow::init()
+{
+	HMODULE module = ::GetModuleHandle(0);
+	HRSRC resourseHandle = ::FindResource(module, MAKEINTRESOURCE(IDR_TEXT1), L"TEXT");
+	HGLOBAL handleData = ::LoadResource(module, resourseHandle);
+	DWORD size = ::SizeofResource(module, resourseHandle);
+	LPVOID data = LockResource(handleData);
+	SetWindowText(handleCellWindow, reinterpret_cast<LPCWSTR>(data));
 }
