@@ -419,6 +419,7 @@ void YaPyN_Editor::deleteCell()
 	if( activeCell != childrensWindow.end() ) {
 		HWND hwnd = activeCell->getHandle();
 		checkHandle(hwnd);
+		DestroyWindow(activeCell->getHandleOfResult());
 		DestroyWindow(hwnd);
 		auto oldCell = activeCell;
 		auto nextCell = activeCell;
@@ -488,10 +489,16 @@ void YaPyN_Editor::clearCells()
 
 void YaPyN_Editor::runCell()
 {
-	activeCell->setResult();
-	::SetWindowText(activeCell->getHandleOfResult(), (LPWSTR)resultText);
-	SendMessage(handleMainWindow, WM_SIZE, 0, 0);
-	InvalidateRect(handleMainWindow, NULL, FALSE);
+	if( activeCell != childrensWindow.end() ) {
+		activeCell->setResult();
+		::SetWindowText(activeCell->getHandleOfResult(), (LPWSTR)resultText);
+		SendMessage(handleMainWindow, WM_SIZE, 0, 0);
+		InvalidateRect(handleMainWindow, NULL, FALSE);
+		activeCell++;
+		if( activeCell != childrensWindow.end() ) {
+			SetFocus(activeCell->getHandle());
+		}
+	}
 }
 
 unsigned int YaPyN_Editor::getCountsOfStrings(HWND handleCell)
