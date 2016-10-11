@@ -14,6 +14,8 @@ const int maxSizeForFileName = 64;
 const char cellBeginSymbol = '{';
 const char cellEndSymbol = '}';
 
+const COLORREF colorActiveCell = RGB(200, 200, 200);
+
 YaPyN_Editor::YaPyN_Editor()
 {
 	handleMainWindow = 0;
@@ -83,7 +85,7 @@ void YaPyN_Editor::OnPaint()
 	::BeginPaint(handleMainWindow, &paintStruct);
 
 	HBRUSH brush;
-	brush = CreateSolidBrush(RGB(200, 200, 200));
+	brush = CreateSolidBrush(colorActiveCell);
 	::FillRect(paintStruct.hdc, &paintStruct.rcPaint, brush);
 	::EndPaint(handleMainWindow, &paintStruct);
 
@@ -419,6 +421,7 @@ void YaPyN_Editor::deleteCell()
 	if( activeCell != childrensWindow.end() ) {
 		HWND hwnd = activeCell->getHandle();
 		checkHandle(hwnd);
+		DestroyWindow(activeCell->getHandleOfResult());
 		DestroyWindow(hwnd);
 		auto oldCell = activeCell;
 		auto nextCell = activeCell;
@@ -488,10 +491,16 @@ void YaPyN_Editor::clearCells()
 
 void YaPyN_Editor::runCell()
 {
-	activeCell->setResult();
-	::SetWindowText(activeCell->getHandleOfResult(), (LPWSTR)resultText);
-	SendMessage(handleMainWindow, WM_SIZE, 0, 0);
-	InvalidateRect(handleMainWindow, NULL, FALSE);
+	if( activeCell != childrensWindow.end() ) {
+		activeCell->setResult();
+		::SetWindowText(activeCell->getHandleOfResult(), (LPWSTR)resultText);
+		SendMessage(handleMainWindow, WM_SIZE, 0, 0);
+		InvalidateRect(handleMainWindow, NULL, FALSE);
+		activeCell++;
+		if( activeCell != childrensWindow.end() ) {
+			SetFocus(activeCell->getHandle());
+		}
+	}
 }
 
 unsigned int YaPyN_Editor::getCountsOfStrings(HWND handleCell)
