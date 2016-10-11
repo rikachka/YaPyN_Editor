@@ -4,8 +4,6 @@
 const int temporarySize = 34;
 // Временный размер одной строчки.
 const int heightOfString = 16;
-// Временный размер одного символа.
-const long widthOfSymbol = 10;
 
 CellWindow::CellWindow()
 {
@@ -38,6 +36,7 @@ void CellWindow::Create(HWND parentHandle)
 
 	checkHandle(handleCellWindow);
 
+	result.Create(parentHandle);
 	init();
 	SetFocus(handleCellWindow);
 }
@@ -46,7 +45,6 @@ void CellWindow::Show(int cmdShow)
 {
 	ShowWindow(handleCellWindow, cmdShow);
 }
-
 
 HWND CellWindow::getHandle() const
 {
@@ -65,6 +63,31 @@ bool CellWindow::changeHeight(unsigned int newCountOfStrings)
 	height = temporarySize + countOfStrings * heightOfString;
 	// Поправить
 	return changed;
+}
+
+void CellWindow::setResult()
+{
+	result.setExistence(true);
+}
+
+bool CellWindow::isResult() const
+{
+	return result.getExistence();
+}
+
+HWND CellWindow::getHandleOfResult() const
+{
+	return result.getHandle();
+}
+
+std::wstring CellWindow::getResultText() const
+{
+	return result.getText();
+}
+
+unsigned int CellWindow::getHeightOfResult() const
+{
+	return result.getHeight();
 }
 
 std::wstring CellWindow::getText() const
