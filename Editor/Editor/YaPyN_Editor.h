@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include "CellWindow.h"
 #include "precompiled.h"
+#include "CellWindow.h"
 
 class YaPyN_Editor
 {
@@ -57,7 +57,6 @@ private:
 	void runCell();
 
 	unsigned int getCountsOfStrings(HWND handleCell);
-	wchar_t* getTextFromCell(HWND handleCell);
 
 	static LRESULT __stdcall windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };

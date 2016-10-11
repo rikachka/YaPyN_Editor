@@ -146,12 +146,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CellResult.h" />
     <ClInclude Include="CellWindow.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="YaPyN_Editor.h" />
     <ClInclude Include="precompiled.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CellResult.cpp" />
     <ClCompile Include="CellWindow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="precompiled.cpp" />

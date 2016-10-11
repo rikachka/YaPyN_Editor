@@ -5,6 +5,8 @@
 const wchar_t* textForExit = L"Завершение работы";
 const wchar_t* textForNewFile = L"Действие со старым файлом";
 
+const wchar_t* resultText = L"Result";
+
 const int YaPyN_Editor::sizeBetweenCells = 10;
 const int YaPyN_Editor::marginLeftRightCells = 10;
 const int maxSizeForFileName = 64;
@@ -40,7 +42,7 @@ bool YaPyN_Editor::Create()
 	CreateWindowEx(0, 
 		L"YaPyN_Editor",
 		L"YaPyN Editor v1.0",
-		WS_EX_OVERLAPPEDWINDOW | WS_SIZEBOX | WS_SYSMENU | WS_VSCROLL,
+		WS_EX_OVERLAPPEDWINDOW | WS_SIZEBOX | WS_SYSMENU | WS_VSCROLL | ES_AUTOHSCROLL,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
@@ -52,6 +54,7 @@ bool YaPyN_Editor::Create()
 
 	createToolbar();
 	checkHandle(handleMainWindow);
+	SetScrollRange(handleMainWindow, SB_VERT, 0, 10000, FALSE);
 	return (handleMainWindow != 0);
 }
 
@@ -97,7 +100,17 @@ void YaPyN_Editor::OnPaint()
 
 		::SetWindowPos(window->getHandle(), HWND_TOP, leftBorder, currentTop, width, window->getHeight(), 0);
 		currentTop += sizeBetweenCells + window->getHeight();
+
+		if( window->isResult() ) {
+			leftBorder = rect.left + 2 * marginLeftRightCells;
+			width = rect.right - rect.left - 4 * marginLeftRightCells;
+
+			::SetWindowPos(window->getHandleOfResult(), HWND_TOP, leftBorder, currentTop, width, window->getHeightOfResult(), 0);
+			currentTop += sizeBetweenCells + window->getHeightOfResult();
+		}
 	}
+
+	// SetScrollRange(handleMainWindow, SB_VERT, 0, 100, TRUE);
 
 	//Подсвечивает activeCell - нужно для того, чтобы проверять, что activeCell на нужном сell'е
 	//PAINTSTRUCT paintStruct2;
@@ -252,66 +265,6 @@ LRESULT YaPyN_Editor::OnCtlColorEdit(WPARAM wParam, LPARAM lParam)
 	return reinterpret_cast<LRESULT>(hbr);
 }
 
-LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	if( message == WM_NCCREATE ) {
-		YaPyN_Editor* window = reinterpret_cast<YaPyN_Editor*> ((reinterpret_cast<CREATESTRUCT*>(lParam))->lpCreateParams);
-		SetLastError(0);
-		SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG>(window));
-		if( GetLastError() ) {
-			return GetLastError();
-		}
-		window->OnNCCreate(hwnd);
-		return DefWindowProc(hwnd, message, wParam, lParam);
-	}
-
-	YaPyN_Editor* window = reinterpret_cast<YaPyN_Editor*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-	switch( message ) {
-		case WM_CREATE:
-		{
-			window->OnCreate();
-			return DefWindowProc(hwnd, message, wParam, lParam);
-		}
-		case WM_PAINT:
-		{
-			window->OnPaint();
-			return DefWindowProc(hwnd, message, wParam, lParam);
-		}
-		case WM_SIZE:
-		{
-			window->OnSize();
-			return DefWindowProc(hwnd, message, wParam, lParam);
-		}
-		case WM_CLOSE:
-		{
-			if( window->OnClose() ) {
-				::PostQuitMessage(0);
-				return DefWindowProc(hwnd, message, wParam, lParam);
-			} else {
-				return 0;
-			}
-		}
-		case WM_COMMAND:
-		{
-			window->OnCommand(hwnd, message, wParam, lParam);
-			return DefWindowProc(hwnd, message, wParam, lParam);
-		}
-		case WM_DESTROY:
-		{
-			window->OnDestroy();
-			return SuccessDestroyWindowValue;
-		}
-		case WM_CTLCOLOREDIT:
-		{
-			return window->OnCtlColorEdit(wParam, lParam);
-		}
-		default:
-		{
-			return DefWindowProc(hwnd, message, wParam, lParam);
-		}
-	}
-}
-
 void YaPyN_Editor::createToolbar() {
 
 	const int bitmapSize = 16;
@@ -372,6 +325,12 @@ bool YaPyN_Editor::saveFile()
 		for( auto it = childrensWindow.begin(); it != childrensWindow.end(); ++it ) {
 			std::wstring text = it->getText();
 			fout << cellBeginSymbol << text << cellEndSymbol << std::endl;
+			/* Или не храним результат, или обдумать новый формат хранения.
+			if( it->isResult() ) {
+				text = it->getResultText();
+				fout << cellBeginSymbol << text << cellEndSymbol << std::endl;
+			}
+			*/
 		}
 		fout.close();
 	}
@@ -403,7 +362,7 @@ bool YaPyN_Editor::loadFile()
 			std::string text;
 			getline(fin, text, cellEndSymbol);
 			int text_begin = text.find(cellBeginSymbol);
-			if (text_begin != -1) {
+			if( text_begin != -1 ) {
 				text = text.substr(text_begin + 1);
 				std::wstring wtext(text.begin(), text.end());
 				createCell(wtext);
@@ -529,18 +488,17 @@ void YaPyN_Editor::clearCells()
 
 void YaPyN_Editor::runCell()
 {
-
+	activeCell->setResult();
+	::SetWindowText(activeCell->getHandleOfResult(), (LPWSTR)resultText);
+	SendMessage(handleMainWindow, WM_SIZE, 0, 0);
+	InvalidateRect(handleMainWindow, NULL, FALSE);
 }
 
 unsigned int YaPyN_Editor::getCountsOfStrings(HWND handleCell)
 {
-	CellWindow* cell = &*handlesAndCells.find(handleCell)->second;
-
 	unsigned int countOfN = 0;
 	unsigned int indexOfN = 0;
 	unsigned int countOfLongStrings = 0;
-
-	//wchar_t* text = getTextFromCell(handleCell);
 	
 	int length = SendMessage(handleCell, WM_GETTEXTLENGTH, 0, 0);
 	std::shared_ptr<wchar_t> text_ptr(new wchar_t[length + 1]);
@@ -561,14 +519,67 @@ unsigned int YaPyN_Editor::getCountsOfStrings(HWND handleCell)
 	return countOfN;
 }
 
-// TODO: заменить использование этой функции функцией CellWindow::getText()
-// Попытки вынести однотипный кусок получения текста из ячеек, вынеся его в функцию.
-wchar_t* YaPyN_Editor::getTextFromCell(HWND handleCell)
+LRESULT YaPyN_Editor::windowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	int length = SendMessage(handleCell, WM_GETTEXTLENGTH, 0, 0);
-	std::shared_ptr<wchar_t> text_ptr(new wchar_t[length + 1]);
-	wchar_t* text = text_ptr.get();
-	SendMessage(handleCell, WM_GETTEXT, length + 1, reinterpret_cast<LPARAM>(text));
+	if( message == WM_NCCREATE ) {
+		YaPyN_Editor* window = reinterpret_cast<YaPyN_Editor*> ((reinterpret_cast<CREATESTRUCT*>(lParam))->lpCreateParams);
+		SetLastError(0);
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG>(window));
+		if( GetLastError() ) {
+			return GetLastError();
+		}
+		window->OnNCCreate(hwnd);
+		return DefWindowProc(hwnd, message, wParam, lParam);
+	}
 
-	return text;
+	YaPyN_Editor* window = reinterpret_cast<YaPyN_Editor*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+	switch( message ) {
+		case WM_CREATE:
+		{
+			window->OnCreate();
+			return DefWindowProc(hwnd, message, wParam, lParam);
+		}
+		case WM_PAINT:
+		{
+			window->OnPaint();
+			return DefWindowProc(hwnd, message, wParam, lParam);
+		}
+		case WM_SIZE:
+		{
+			window->OnSize();
+			return DefWindowProc(hwnd, message, wParam, lParam);
+		}
+		case WM_CLOSE:
+		{
+			if( window->OnClose() ) {
+				::PostQuitMessage(0);
+				return DefWindowProc(hwnd, message, wParam, lParam);
+			}
+			else {
+				return 0;
+			}
+		}
+		case WM_COMMAND:
+		{
+			window->OnCommand(hwnd, message, wParam, lParam);
+			return DefWindowProc(hwnd, message, wParam, lParam);
+		}
+		case WM_DESTROY:
+		{
+			window->OnDestroy();
+			return SuccessDestroyWindowValue;
+		}
+		case WM_CTLCOLOREDIT:
+		{
+			return window->OnCtlColorEdit(wParam, lParam);
+		}
+		case WM_VSCROLL:
+		{
+			//MessageBox(window->handleMainWindow, L"sdfsdf", L"sss", MB_OK);
+		}
+		default:
+		{
+			return DefWindowProc(hwnd, message, wParam, lParam);
+		}
+	}
 }
