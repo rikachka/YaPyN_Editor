@@ -499,6 +499,8 @@ void YaPyN_Editor::runCell()
 		activeCell++;
 		if( activeCell != childrensWindow.end() ) {
 			SetFocus(activeCell->getHandle());
+		} else {
+			activeCell--;
 		}
 	}
 }
